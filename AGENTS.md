@@ -49,6 +49,7 @@
 - [行业档案库](./data/industries/README.md)
 - [数据分级规则](./data/source-grading.md)
 - [引导盘点](./references/intake-questions.md)
+- [模式分叉](./references/pattern-fork.md)
 - [新手引导原则](./references/novice-guidance.md)
 - [体检评分口径](./references/checkup-scorecard.md)
 - [陪跑模板](./references/coaching-templates.md)
@@ -56,3 +57,4 @@
 - [决策记录 0001：范围与边界](./docs/decisions/0001-scope-and-boundaries.md)
 - [决策记录 0002：两阶段与闸门](./docs/decisions/0002-two-stage-gate.md)
 - [决策记录 0003：行业档案与数据分级](./docs/decisions/0003-data-layer.md)
+- [决策记录 0004：模式分叉前置](./docs/decisions/0004-pattern-fork.md)
