@@ -2,7 +2,11 @@
 
 ## 项目目标
 
-本项目维护一个可配合 AI 使用的创业指南技能。它根据用户的兴趣或关键词、领域、地区、可用时间、能力、资源和预算，帮助用户筛选创业方向、形成可验证的启动框架，并按需整理成演示文稿或 PDF 文档。
+本项目维护一个可配合 AI 使用的创业指南技能，服务对象是创业新手。
+
+技能分两阶段：先根据用户的兴趣或关键词、领域、地区、可用时间、能力、资源和预算做启动条件体检，给出「该不该现在开始」的判断；判断通过才进入分阶段陪跑，帮他落地第一个验证周期。演示文稿或 PDF 是按需交付形式。
+
+闸门是本项目的核心约束：体检不通过，不输出阶段任务、预算表和行动计划。修改规则时不要弱化这一点。
 
 当前阶段先维护项目规则与 Markdown 文档框架；在架构方案确认前不编写实质性实现代码。
 
@@ -40,5 +44,9 @@
 - [能力索引](./docs/capability-index.md)
 - [验证指南](./docs/verification-guide.md)
 - [行为样例](./examples/README.md)
+- [引导盘点](./references/intake-questions.md)
+- [体检评分口径](./references/checkup-scorecard.md)
+- [陪跑模板](./references/coaching-templates.md)
 - [输出模板](./references/output-templates.md)
-- [决策记录](./docs/decisions/0001-scope-and-boundaries.md)
+- [决策记录 0001：范围与边界](./docs/decisions/0001-scope-and-boundaries.md)
+- [决策记录 0002：两阶段与闸门](./docs/decisions/0002-two-stage-gate.md)
