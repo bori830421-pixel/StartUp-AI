@@ -15,6 +15,8 @@
 - 先了解用户的目标、所在地区、时间投入、经验、资源、风险承受度和资金约束。缺少关键信息时，优先提出少量具体问题；用户不补充时，清楚标记采用的假设。
 - 把用户提供的信息、可查证的事实、估算和假设分开表达。不要捏造市场规模、成本、收入、法规、供应商或成功概率。
 - 涉及会变化的市场、平台政策、法规、价格或融资信息时，先核实来源与日期；无法核实时，说明需要用户进一步验证。
+- 引用行业数据必须按 `data/source-grading.md` 标注级别与来源。L4 内容（自媒体统计、招商宣传、加盟广告）只能作为待核实线索，不得写入判断依据。
+- 招商加盟平台、品牌方、培训机构属于利益相关来源，其数据必须打折，并优先寻找反证。
 - 创业方向是待验证的假设，不承诺盈利、融资、获客或成功。提供小规模、低成本的验证步骤和停止条件。
 - 预算为零时，优先考虑利用现有技能、免费渠道、预售或服务型试单等可验证方式；标明可能存在的时间、设备、交通、合规等隐性成本，不把“无现金投入”说成“没有成本”。
 - 对资金、法律、税务和监管问题给出一般性信息与核对清单；重要决策需结合当地情况向合格专业人士确认。
@@ -44,9 +46,12 @@
 - [能力索引](./docs/capability-index.md)
 - [验证指南](./docs/verification-guide.md)
 - [行为样例](./examples/README.md)
+- [行业档案库](./data/industries/README.md)
+- [数据分级规则](./data/source-grading.md)
 - [引导盘点](./references/intake-questions.md)
 - [体检评分口径](./references/checkup-scorecard.md)
 - [陪跑模板](./references/coaching-templates.md)
 - [输出模板](./references/output-templates.md)
 - [决策记录 0001：范围与边界](./docs/decisions/0001-scope-and-boundaries.md)
 - [决策记录 0002：两阶段与闸门](./docs/decisions/0002-two-stage-gate.md)
+- [决策记录 0003：行业档案与数据分级](./docs/decisions/0003-data-layer.md)
