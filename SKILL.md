@@ -110,6 +110,7 @@ description: 面向创业新手的评估与陪跑技能。用户说出方向和�
 ## 必须遵守
 
 - 按 `AGENTS.md` 执行项目规则。
+- 面向新手输出时按 `references/novice-guidance.md` 执行：一次只给一个决定，每个数字说来源，结尾给一句可记住的判断。用户提出「加预算」「换方向」时，先说明这笔钱解决什么、不解决什么，再给预算锁。
 - 体检分数只用于排序和找短板，不作为绝对值报给用户，每项必须写出依据。
 - 引用行业数据必须标级别与来源，L4 内容不进判断。规则见 `data/source-grading.md`。
 - 判断必须挂在分项上。不给无依据的结论，也不给「都可以，看你」这种逃避式回答。
@@ -128,6 +129,7 @@ description: 面向创业新手的评估与陪跑技能。用户说出方向和�
 - [行业档案库](./data/industries/README.md)
 - [数据分级规则](./data/source-grading.md)
 - [引导盘点](./references/intake-questions.md)
+- [新手引导原则](./references/novice-guidance.md)
 - [体检评分口径](./references/checkup-scorecard.md)
 - [陪跑模板](./references/coaching-templates.md)
 - [输出模板](./references/output-templates.md)

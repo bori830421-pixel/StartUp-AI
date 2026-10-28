@@ -49,6 +49,7 @@
 - [行业档案库](./data/industries/README.md)
 - [数据分级规则](./data/source-grading.md)
 - [引导盘点](./references/intake-questions.md)
+- [新手引导原则](./references/novice-guidance.md)
 - [体检评分口径](./references/checkup-scorecard.md)
 - [陪跑模板](./references/coaching-templates.md)
 - [输出模板](./references/output-templates.md)
