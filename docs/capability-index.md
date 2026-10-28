@@ -12,9 +12,10 @@
 | 目的与手段分离 | 想要现金流、时间自由、做成自己的事，或学一门生意 | 区分手段与目的，并据此调整评估口径 | 口径说明 | [06](../examples/06-checkup-report.md) | 规则已定义，已有样例 |
 | 创业方向探索 | 领域、个人优势、想解决的问题 | 提出少量候选方向并解释适配性，供选定一个进入体检 | 方向比较表 | [01](../examples/01-vague-keyword.md) | 规则已定义，已有样例 |
 | 模式分叉 | 方向与预算，但未说明经营模式 | 同一类目下不同模式的成本结构不同，先给结构对比、默认取最轻模式，分叉后重算分项 | 模式对比与重算后的分项 | [09](../examples/09-ecommerce-5000.md)、[12](../examples/12-skip-checkup.md) | 规则已定义，已有样例 |
-| 启动条件体检 | 盘点结果与待评估方向 | 三个硬门槛加四个软约束，用用户信息加行业档案的结构依据 | 体检报告 | [06](../examples/06-checkup-report.md)、[07](../examples/07-coaching-stage.md)、[11](../examples/11-insufficient-info.md)、[12](../examples/12-skip-checkup.md)、[13](../examples/13-no-profile.md) | 规则已定义，已有样例 |
+| 运行时检索 | 已识别的原型、用户地区 | 按六步循环生成检索计划并执行：分型、检索计划、执行、校验来源、判断、输出；两轮约 8 个查询内收口，附检索记录表 | 检索计划、检索记录表、带空缺的结论 | [15](../examples/15-runtime-retrieval.md) | 规则已定义，已有样例 |
+| 启动条件体检 | 盘点结果与待评估方向 | 三个硬门槛加四个软约束，用用户信息、原型结构与检索到的当前事实 | 体检报告 | [06](../examples/06-checkup-report.md)、[07](../examples/07-coaching-stage.md)、[11](../examples/11-insufficient-info.md)、[12](../examples/12-skip-checkup.md)、[13](../examples/13-no-profile.md) | 规则已定义，已有样例 |
 | 信息不足处理 | 某项硬门槛「没测过」而非「测了不够」 | 区分没测过与测了不够，暂停该项并给补测动作，其余维度照常算；区分「待核实」与「信息不足」 | 补测动作与分岔结论 | [09](../examples/09-ecommerce-5000.md)、[11](../examples/11-insufficient-info.md)、[12](../examples/12-skip-checkup.md) | 规则已定义，已有样例 |
-| 行业档案引用 | 方向所在的创业类目 | 按数据级别决定档案内容能否进入判断；标「无可靠数据」的部分改用用户实测 | 结构依据与实测清单 | [08](../examples/08-evidence-based-checkup.md)、[11](../examples/11-insufficient-info.md)、[13](../examples/13-no-profile.md) | 规则已定义，已有样例；档案库已收录 3 个类目 |
+| 行业档案引用 | 方向所在的创业类目 | 档案卡是检索结果的缓存，不是依据：按数据级别决定能否进入判断，过期卡只当检索起点，标「无可靠数据」的部分改用用户实测 | 结构依据与实测清单 | [08](../examples/08-evidence-based-checkup.md)、[11](../examples/11-insufficient-info.md)、[13](../examples/13-no-profile.md) | 规则已定义，已有样例；档案库已收录 3 个类目 |
 | 闸门判定 | 体检结果 | 输出放行、有条件放行、信息不足或不建议启动，并给出一句挂在分项上的判断 | 一句判断加短板清单 | [06](../examples/06-checkup-report.md)、[07](../examples/07-coaching-stage.md)、[11](../examples/11-insufficient-info.md)、[12](../examples/12-skip-checkup.md)、[13](../examples/13-no-profile.md) | 规则已定义，已有样例 |
 | 下一步唯一动作 | 已给出的判断 | 不管结论落在哪一档，每轮输出以一个当天能开始、做完能做决定的动作结尾 | 单个动作与判断标准 | [06](../examples/06-checkup-report.md)、[12](../examples/12-skip-checkup.md)、[13](../examples/13-no-profile.md) | 规则已定义，已有样例 |
 | 最小代价出口 | 体检不通过但用户仍想验证 | 给一个动作、一个判断标准、一个损失上限，不给计划和阶段 | 单次验证动作 | [06](../examples/06-checkup-report.md) | 规则已定义，已有样例 |
