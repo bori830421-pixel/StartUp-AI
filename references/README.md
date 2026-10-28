@@ -11,6 +11,7 @@
 | [intake-questions.md](./intake-questions.md) | 8 道选择题形式的引导盘点，把答不出的开放题变成答得出的选择题 | 现行 |
 | [pattern-fork.md](./pattern-fork.md) | 体检前的模式分叉：分叉位置、各类目分叉、对四项的影响、三条纪律 | 现行 |
 | [runtime-loop.md](./runtime-loop.md) | 运行时循环：分型→检索计划→执行→校验→判断→输出六步，含两轮检索预算与「什么算查到了」 | 现行 |
+| [offline-degradation.md](./offline-degradation.md) | 离线降级：四类「搜不了」的判定、固定提示话术、无网络时哪些维度还能算、结论封顶规则 | 现行 |
 | [search-playbook.md](./search-playbook.md) | 检索剧本：四类查询公式、七个原型各自的查询串模板、站点限定、垃圾识别 | 现行 |
 | [research-protocol.md](./research-protocol.md) | 定向检索协议：结构靠推演、参数靠实测、事实靠原文；反证测试与交叉验证 | 现行 |
 | [checkup-scorecard.md](./checkup-scorecard.md) | 七维评分口径：三个硬门槛加四个软约束，含分档与不做什么 | 现行 |
@@ -22,11 +23,12 @@
 
 主流程顺序是 `intake-questions` → `pattern-fork` → `runtime-loop` → `checkup-scorecard`，`novice-guidance` 全程约束输出形态，`coaching-templates` 只在闸门放行后使用，`output-templates` 只在用户要文件时使用。
 
-三份检索文件的分工，不要混着用：
+检索相关的四份文件分工，不要混着用：
 
 | 文件 | 回答什么 | 什么时候翻 |
 | --- | --- | --- |
 | `runtime-loop.md` | 检索的流程与预算：怎么起、几轮停、什么算查到 | 每次评估开头 |
+| `offline-degradation.md` | 没有网络时怎么降级：怎么判定、怎么告知、结论能到哪一档 | 检索跑不起来时 |
 | `search-playbook.md` | 具体查询串怎么写、去哪搜、搜到什么算垃圾 | 生成检索计划时 |
 | `research-protocol.md` | 三层依据怎么分工：结构不搜、参数实测、事实原文 | 判断能不能用某条信息时 |
 

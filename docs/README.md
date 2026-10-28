@@ -11,7 +11,7 @@
 | [architecture-map.md](./architecture-map.md) | 产品目的、主流程、能力模块、数据边界、文件边界 | 现行 |
 | [capability-index.md](./capability-index.md) | 能力清单、成熟度状态、对应样例、条目编写约定 | 现行 |
 | [verification-guide.md](./verification-guide.md) | 验收场景、交付前检查、闸门退化形态、文档变更验证方式 | 现行 |
-| [decisions/](./decisions/) | 决策记录，一主题一文件，编号连续 | 7 份 |
+| [decisions/](./decisions/) | 决策记录，一主题一文件，编号连续 | 8 份 |
 
 ## 决策记录
 
@@ -26,6 +26,7 @@
 | [0005](./decisions/0005-file-size-and-navigation.md) | 文件规模与导航索引 | 已采纳 |
 | [0006](./decisions/0006-archetype-layer.md) | 按原型分类，不按行业分类 | 已采纳 |
 | [0007](./decisions/0007-runtime-retrieval.md) | 技能是运行时流程，不是静态知识库 | 已采纳 |
+| [0008](./decisions/0008-offline-degradation.md) | 没有联网时的降级规则 | 已采纳 |
 
 ## 新增约定
 
