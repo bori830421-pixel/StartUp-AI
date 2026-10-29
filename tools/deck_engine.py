@@ -36,10 +36,12 @@ def check_page(no, title):
 
     致命项只看声明框，是几何事实：
       遮挡 —— 后画的色块盖住文字 30% 以上面积，一定会看不见；
-      重叠 —— 两个文字框相互压住 50% 以上，一定有字叠在一起。
+      重叠 —— 两个文字框相互压住 50% 以上，一定有字叠在一起；
+      出界 —— 文字估算底边画到页面外，导出后直接看不到。
     提示项用估算高度判断框是否留得太紧，属主观，需目视确认。
 
-    不拿估算高度做致命判定：估算偏保守，单行文字会被误判成重叠。
+    不拿估算高度做遮挡与重叠判定：估算偏保守，单行文字会被误判。
+    出界判定必须用估算高度 —— 声明框大而内容少的框，框出界但字没出界。
     """
     fatal, hints = [], []
     items = registry()
@@ -55,6 +57,11 @@ def check_page(no, title):
         if meta['est'] > h * 1.25 + 4:
             hints.append('p%02d 框偏紧：%r 估高 %.0f > 框高 %d'
                          % (no, meta['preview'], meta['est'], h))
+        # 8px 容差：亚像素取整不应报错
+        bottom = y + max(meta['est'], 1)
+        if bottom > CANVAS_H + 8:
+            fatal.append('p%02d 超出画布：%r 底边 %.0f > %d'
+                         % (no, meta['preview'], bottom, CANVAS_H))
 
     for t in texts:
         for r in rects:

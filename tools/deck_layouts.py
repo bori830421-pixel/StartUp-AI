@@ -89,7 +89,17 @@ def table_assumptions(slide, s, page, total):
 
 def table_card(slide, s, page, total):
     top = header(slide, s['title'], page, total, s.get('source'))
-    _draw_table(slide, s, y=top + 6)
+    bottom = _draw_table(slide, s, y=top + 6)
+    # 表格行数少时左下会空出一大片，用可选 left_notes 补一段解读
+    ln = s.get('left_notes')
+    if ln:
+        ly = max(bottom + 34, top + 300)
+        room = CANVAS_H - 56 - (ly + 38)   # 底部留 56px 给页脚
+        if room > 60:                       # 塞不下就不画，宁可空着
+            textbox(slide, MARGIN, ly, 700, 32,
+                    [{'text': ln['title'], 'size': 19, 'color': ln.get('color', 'cyan'), 'bold': True}])
+            bullets(slide, MARGIN, ly + 38, 700, room, ln['items'], size=19,
+                    spacing=ln.get('spacing', 1.7))
     c = s['card']
     cx = c.get('x', 820)
     rect(slide, cx, top + 6, 400, 470, fill='navy')
@@ -138,12 +148,15 @@ def table_bar(slide, s, page, total):
     b = s['bar']
     textbox(slide, MARGIN, top + 276, 700, 28, [{'text': b['caption'], 'size': 17, 'color': 'gray'}])
     yy = top + 314
-    vmax = b.get('max') or max(r['v'] for r in b['rows'])
+    # vmax 取「用户值」与「实际最大值」的较大者：用户把 max 设小了会导致条超宽，
+    # 设大了只是条变短，无害。所以这里只能往上取，不能直接用用户值。
+    vmax = max(b.get('max') or 0, max(r['v'] for r in b['rows']))
     for r in b['rows']:
-        textbox(slide, MARGIN, yy + 4, 70, 30, [{'text': r['name'], 'size': 18, 'color': 'dgray'}])
-        w = max(6, int(r['v'] / vmax * 520))
-        rect(slide, MARGIN + 80, yy, w, 34, fill=r.get('c', 'navy'))
-        textbox(slide, MARGIN + 90 + w, yy + 3, 110, 30,
+        # 名称框留 118px：4 个中文字在 18 号下约 72px，70px 会折行压到下一行
+        textbox(slide, MARGIN, yy + 4, 118, 30, [{'text': r['name'], 'size': 18, 'color': 'dgray'}])
+        w = max(6, min(460, int(r['v'] / vmax * 460)))
+        rect(slide, MARGIN + 128, yy, w, 34, fill=r.get('c', 'navy'))
+        textbox(slide, MARGIN + 138 + w, yy + 3, 110, 30,
                 [{'text': r['label'], 'size': 18, 'color': 'navy', 'bold': True}])
         yy += 52
     p = s['panel']
@@ -201,18 +214,19 @@ def cards(slide, s, page, total):
     cw = int((CONTENT_W - gap * (n - 1)) / n)
     for i, c in enumerate(s['cards']):
         x = MARGIN + i * (cw + gap)
-        rect(slide, x, top + 6, cw, 430, fill='white', line='lgray', line_w=1)
+        # 卡片高 470：act 区必须落在框内，否则动作文字会掉到白框外面
+        rect(slide, x, top + 6, cw, 470, fill='white', line='lgray', line_w=1)
         rect(slide, x, top + 6, cw, 4, fill='navy')
         textbox(slide, x + 24, top + 30, cw - 48, 40,
                 [{'text': c['num'], 'size': 30, 'color': 'lgray', 'bold': True}])
         textbox(slide, x + 24, top + 80, cw - 48, 70,
                 [{'text': c['title'], 'size': 23, 'color': 'navy', 'bold': True, 'line_spacing': 1.25}])
-        textbox(slide, x + 24, top + 168, cw - 48, 210,
+        textbox(slide, x + 24, top + 168, cw - 48, 198,
                 [{'text': c['body'], 'size': 18, 'color': 'dgray', 'line_spacing': 1.65}])
-        rect(slide, x + 24, top + 386, cw - 48, 1, fill='lgray')
-        textbox(slide, x + 24, top + 398, cw - 48, 130,
+        rect(slide, x + 24, top + 380, cw - 48, 1, fill='lgray')
+        textbox(slide, x + 24, top + 392, cw - 48, 76,
                 [{'text': c.get('act_title', '你能做的'), 'size': 15, 'color': 'cyan', 'bold': True},
-                 {'text': c['act'], 'size': 17, 'color': 'dgray', 'line_spacing': 1.6,
+                 {'text': c['act'], 'size': 17, 'color': 'dgray', 'line_spacing': 1.55,
                   'space_before': 6}])
 
 
