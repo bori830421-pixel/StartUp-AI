@@ -131,7 +131,20 @@
 | 链接可用 | 索引里的相对路径全部能打开，没有指向已删除或改名文件的链接 |
 | 三级导航 | 超过 120 行的文件顶部有「本文导航」，且锚点与标题一致 |
 
-自检命令：`find . -name "*.md" -not -path "./.workbuddy-ai/*" -exec wc -lc {} + | sort -rn | head -20`
+自检命令（跨平台，四项一次跑完，有缺陷退出码为 1）：
+
+```bash
+python tools/doc_check.py
+```
+
+不用 Python 时，各平台查体积的等价命令：
+
+| 平台 | 命令 |
+| --- | --- |
+| Windows（PowerShell） | `Get-ChildItem -Recurse -Filter *.md \| Where-Object { $_.FullName -notmatch '\.workbuddy-ai' } \| ForEach-Object { [pscustomobject]@{ F=$_.FullName; L=(Get-Content $_.FullName).Count } } \| Sort-Object L -Descending \| Select-Object -First 20` |
+| macOS / Linux | `find . -name "*.md" -not -path "./.workbuddy-ai/*" -exec wc -lc {} + \| sort -rn \| head -20` |
+
+体积命令只查行数与字节，不查导航和链接；完整判定以 `doc_check.py` 为准。原文档里只写了一条 `find ... -exec wc -lc`，在 Windows 上不可执行，已替换。
 
 结构缺陷按缺陷处理，不按风格问题放过：索引里查不到的文件等于不存在，链接断掉的索引比没有索引更容易误导。
 
