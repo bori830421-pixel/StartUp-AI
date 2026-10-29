@@ -22,12 +22,39 @@ pip install python-pptx -i https://mirrors.aliyun.com/pypi/simple/
 cd tools
 python deck_engine.py briefs/01-chenghai-zhaoyiming.json 输出.pptx
 python deck_engine.py briefs/01-chenghai-zhaoyiming.json 输出.pptx --png preview/
+python deck_lint.py briefs/01-chenghai-zhaoyiming.json --png preview/   # 渲染 + 几何检查，一条命令
 ```
 
 - `--png`：Windows 下用 COM 导出逐页图片，用于目视复核（失败只告警，不影响出文件）
 - `--strict`：自检有 `[必改]` 时返回退出码 1，适合放进流程里卡交付
 
 退出码：`0` 正常 / `2` 缺依赖 / `3` brief 结构错误 / `4` 渲染失败。
+
+## 交付前几何检查
+
+`deck_engine` 的自检只比对文字框自身的估高与框高，**管不到「文字框 vs 它背后的色块」，也管不到渲染器实际怎么断行**。这两类问题过去只能靠「转 PDF → 转 PNG → 逐页看图」，一轮 50 秒。
+
+`deck_lint.py` 把 PDF 的真实坐标读出来，一次给出全部可判定缺陷：
+
+```bash
+python deck_lint.py 输出.pptx              # 已渲染的稿子
+python deck_lint.py briefs/xx.json        # 先渲染再查，临时文件自动清理
+python deck_lint.py 输出.pptx --png out/  # 顺手导出逐页图，供人工抽查
+```
+
+| 级别 | 检查 | 判据 |
+| --- | --- | --- |
+| 必改 | 越出色块 | 文字落在某个填充矩形内，但某一边超出 > 5pt（约 7px） |
+| 必改 | 出页面 | 文字 bbox 越过页面边界 |
+| 必改 | 行首标点 | 某行以「。！？」开头——等于半行空白 |
+| 必改 | 文字重叠 | 两行文字压住彼此一半以上 |
+| 提示 | 贴底色块下边 | 没越界但离底边不足 4pt，内边距被吃光，视觉上就是压线 |
+| 提示 | 行首标点 | 以「，、；：」开头，读得下去，但不够干净 |
+| 提示 | 残行 | 只剩一个标点独自成行 |
+
+`--tol` 调越界容差（默认 5pt）。退出码 `0` 干净 / `1` 有必改项，可以串进脚本。
+
+依赖 LibreOffice（`soffice`）转 PDF，缺了会直接报错，不会假装通过。
 
 ## 文件
 
@@ -36,6 +63,7 @@ python deck_engine.py briefs/01-chenghai-zhaoyiming.json 输出.pptx --png previ
 | `deck_kit.py` | 设计令牌、px/pt 换算、文本框/表格/面板等基础件 | 400 |
 | `deck_layouts.py` | 11 种页型，每种只吃数据 | 400 |
 | `deck_engine.py` | 命令行入口、自检、PNG 导出 | 200 |
+| `deck_lint.py` | 读 PDF 真实坐标做几何检查，出缺陷清单 | 250 |
 | `briefs/*.json` | 内容。新增一份就是一个新演示文稿 | — |
 
 现有 brief：
@@ -60,10 +88,12 @@ python deck_engine.py briefs/01-chenghai-zhaoyiming.json 输出.pptx --png previ
 
 自检**不判断好不好看**。标题是不是结论句、数字前后是否一致、假设有没有标注，仍然按 `references/deck-spec.md` 第 7 节人工过。
 
+自检的盲区交给 `deck_lint.py`：文字框与背后色块的关系、渲染器实际断行、行首标点，都由它从 PDF 坐标判定。两个工具的分工是——引擎管「声明对不对」，lint 管「画出来对不对」。
+
 ## 已知限制
 
 - 中文字体写死 `微软雅黑`，英文 `Arial`。换字体改 `deck_kit.py` 的 `EA` / `LATIN`。
-- 文本宽度是估算（全角按 1 字号、半角按 0.55 字号），所以 `[提示]` 会有误报，不会漏报。
+- 文本宽度是估算（全角按 1 字号、半角按 0.55 字号），所以 `[提示]` 会有误报，不会漏报。真实断行只有渲染出来才知道——以 `deck_lint.py` 的结果为准。
 - PNG 导出依赖本机装了 PowerPoint 或 WPS 且 COM 可用。导出失败不影响 `.pptx` 本身。
 - 只覆盖 11 种页型。需要新结构时加页型，不要用拼凑的办法硬塞。
 - 表格行数少的页（`table-card`）左下会空出一片，用可选 `left_notes`（`{title, items}`）补一段解读。不写就空着；空间不够时自动不画，宁可空着也不出界。

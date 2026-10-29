@@ -161,10 +161,11 @@ def table_bar(slide, s, page, total):
         yy += 52
     p = s['panel']
     rect(slide, 820, top + 252, 400, 268, fill='xlgray')
+    # spacing 1.45：五条内容 × 19 号刚好留 10pt 底边距，1.55 会把最后一行压到面板边线上
     paras(slide, 852, top + 276, 340, 230,
           [{'t': p['title'], 'size': 22, 'c': 'navy', 'b': True}] +
           [{'t': t, 'c': 'cyan' if t == p['items'][-1] else 'dgray'} for t in p['items']],
-          size=19, spacing=1.55, gap=10)
+          size=19, spacing=1.45, gap=10)
 
 
 # ---------- 07 两栏对照（左右面板 + VS） ----------
@@ -214,17 +215,18 @@ def cards(slide, s, page, total):
     cw = int((CONTENT_W - gap * (n - 1)) / n)
     for i, c in enumerate(s['cards']):
         x = MARGIN + i * (cw + gap)
-        # 卡片高 470：act 区必须落在框内，否则动作文字会掉到白框外面
-        rect(slide, x, top + 6, cw, 470, fill='white', line='lgray', line_w=1)
+        # 卡片高 520（top+6 → top+526）。act 框底 top+520 必须落在卡片内，
+        # 留 6px 呼吸；框高 128 装得下「小标题 + 两行 17pt 动作」，动作文案按两行写。
+        rect(slide, x, top + 6, cw, 520, fill='white', line='lgray', line_w=1)
         rect(slide, x, top + 6, cw, 4, fill='navy')
         textbox(slide, x + 24, top + 30, cw - 48, 40,
                 [{'text': c['num'], 'size': 30, 'color': 'lgray', 'bold': True}])
         textbox(slide, x + 24, top + 80, cw - 48, 70,
                 [{'text': c['title'], 'size': 23, 'color': 'navy', 'bold': True, 'line_spacing': 1.25}])
-        textbox(slide, x + 24, top + 168, cw - 48, 198,
+        textbox(slide, x + 24, top + 168, cw - 48, 200,
                 [{'text': c['body'], 'size': 18, 'color': 'dgray', 'line_spacing': 1.65}])
-        rect(slide, x + 24, top + 380, cw - 48, 1, fill='lgray')
-        textbox(slide, x + 24, top + 392, cw - 48, 76,
+        rect(slide, x + 24, top + 386, cw - 48, 1, fill='lgray')
+        textbox(slide, x + 24, top + 392, cw - 48, 128,
                 [{'text': c.get('act_title', '你能做的'), 'size': 15, 'color': 'cyan', 'bold': True},
                  {'text': c['act'], 'size': 17, 'color': 'dgray', 'line_spacing': 1.55,
                   'space_before': 6}])
