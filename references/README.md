@@ -18,10 +18,13 @@
 | [novice-guidance.md](./novice-guidance.md) | 面向新手的输出形态原则：三类简单思维与对应写法 | 现行 |
 | [coaching-templates.md](./coaching-templates.md) | 单阶段陪跑骨架：目标、动作、交付物、话术、账本、判断点 | 现行 |
 | [output-templates.md](./output-templates.md) | 报告、演示文稿、PDF 的章节结构与一致性检查 | 现行 |
+| [deck-spec.md](./deck-spec.md) | 演示文稿交付规格：两类模板的页序、每页必须成立的判断、渲染三级降级 | 现行 |
 
 ## 阅读顺序
 
-主流程顺序是 `intake-questions` → `pattern-fork` → `runtime-loop` → `checkup-scorecard`，`novice-guidance` 全程约束输出形态，`coaching-templates` 只在闸门放行后使用，`output-templates` 只在用户要文件时使用。
+主流程顺序是 `intake-questions` → `pattern-fork` → `runtime-loop` → `checkup-scorecard`，`novice-guidance` 全程约束输出形态，`coaching-templates` 只在闸门放行后使用，`output-templates` 与 `deck-spec` 只在用户要文件时使用。
+
+交付形式的两个文件分工：`output-templates.md` 给章节结构与一致性检查项，`deck-spec.md` 给页序、页型与渲染降级。要出文件时先读 `deck-spec.md`，它引用了 `tools/` 的引擎。
 
 检索相关的四份文件分工，不要混着用：
 
