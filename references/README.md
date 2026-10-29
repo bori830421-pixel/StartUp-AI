@@ -9,6 +9,7 @@
 | 文件 | 用途 | 状态 |
 | --- | --- | --- |
 | [intake-questions.md](./intake-questions.md) | 8 道选择题形式的引导盘点，把答不出的开放题变成答得出的选择题 | 现行 |
+| [capital-bands.md](./capital-bands.md) | 资金带分层：六档预算 × 七原型映射，先按钱筛掉不可能的原型，再进模式分叉 | 现行 |
 | [pattern-fork.md](./pattern-fork.md) | 体检前的模式分叉：分叉位置、各类目分叉、对四项的影响、三条纪律 | 现行 |
 | [runtime-loop.md](./runtime-loop.md) | 运行时循环：分型→检索计划→执行→校验→判断→输出六步，含两轮检索预算与「什么算查到了」 | 现行 |
 | [offline-degradation.md](./offline-degradation.md) | 离线降级：四类「搜不了」的判定、固定提示话术、无网络时哪些维度还能算、结论封顶规则 | 现行 |
@@ -22,7 +23,9 @@
 
 ## 阅读顺序
 
-主流程顺序是 `intake-questions` → `pattern-fork` → `runtime-loop` → `checkup-scorecard`，`novice-guidance` 全程约束输出形态，`coaching-templates` 只在闸门放行后使用，`output-templates` 与 `deck-spec` 只在用户要文件时使用。
+主流程顺序是 `intake-questions` → `capital-bands` → `pattern-fork` → `runtime-loop` → `checkup-scorecard`，`novice-guidance` 全程约束输出形态，`coaching-templates` 只在闸门放行后使用，`output-templates` 与 `deck-spec` 只在用户要文件时使用。
+
+`capital-bands` 与 `pattern-fork` 的顺序不能反：先按钱筛原型，再在剩下的原型里分模式。反了会给出「5000 元怎么开便利店」这种分叉。
 
 交付形式的两个文件分工：`output-templates.md` 给章节结构与一致性检查项，`deck-spec.md` 给页序、页型与渲染降级。要出文件时先读 `deck-spec.md`，它引用了 `tools/` 的引擎。
 

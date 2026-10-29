@@ -99,5 +99,5 @@ find . -name "*.md" -not -path "./.workbuddy-ai/*" -exec wc -lc {} + | sort -rn 
 - [文档目录索引](./docs/README.md)：架构地图、能力索引、验证指南、决策记录
 - [参考模板索引](./references/README.md)：引导盘点、模式分叉、运行时检索与查询串、评分口径、陪跑与输出模板
 - [行为样例索引](./examples/README.md)
-- [数据层索引](./data/README.md)：数据分级规则、原型库、行业卡（检索缓存）
+- [数据层索引](./data/README.md)：行业分类骨架、数据分级规则、原型库、行业卡（检索缓存）
 - [版式引擎](./tools/README.md)：brief 格式、11 种页型、一条命令出 pptx
