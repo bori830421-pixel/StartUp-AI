@@ -11,7 +11,7 @@
 | [architecture-map.md](./architecture-map.md) | 产品目的、主流程、能力模块、数据边界、文件边界 | 现行 |
 | [capability-index.md](./capability-index.md) | 能力清单、成熟度状态、对应样例、条目编写约定 | 现行 |
 | [verification-guide.md](./verification-guide.md) | 验收场景、交付前检查、闸门退化形态、文档变更验证方式 | 现行 |
-| [decisions/](./decisions/) | 决策记录，一主题一文件，编号连续 | 10 份 |
+| [decisions/](./decisions/) | 决策记录，一主题一文件，编号连续 | 11 份 |
 
 ## 决策记录
 
@@ -29,6 +29,7 @@
 | [0008](./decisions/0008-offline-degradation.md) | 没有联网时的降级规则 | 已采纳 |
 | [0009](./decisions/0009-franchise-h2-and-budget.md) | 加盟类：预算按必查项算，H2 走净现金流 | 已采纳（修订 0007 的预算口径） |
 | [0010](./decisions/0010-deck-engine.md) | 版式引擎：只排版不判断，三级降级 | 已采纳 |
+| [0011](./decisions/0011-h1-channel-quantity.md) | H1：渠道不能单独充数，至少 3 个要说清背后客户量 | 已采纳 |
 
 ## 新增约定
 
