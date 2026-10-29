@@ -1,0 +1,9 @@
+# .bat 必须保持 CRLF：cmd.exe 用 LF 解析批处理会在 goto/label 处出错。
+# 同时这两个文件带 UTF-8 BOM（中文提示需要它），不要做任何转换。
+*.bat  text eol=crlf working-tree-encoding=UTF-8
+
+# Python 源码统一 LF，避免跨平台 diff 噪声
+*.py   text eol=lf
+
+# 离线 wheel 是二进制，禁止任何换行符处理
+*.whl  binary

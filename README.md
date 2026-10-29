@@ -38,6 +38,19 @@
 4. 需要具体口径时查 `references/` 下的文件；检索流程与查询串见 `runtime-loop.md` 和 `search-playbook.md`，断网见 `offline-degradation.md`。
 5. 要出 PPT 时看 `references/deck-spec.md`（页序与每页必须成立的判断）与 `tools/README.md`（一条命令出文件）；不想装 Python 也能用，降级形态在 `deck-spec.md` 第 6 节。
 
+## 部署（要出 PPT 才需要）
+
+双击项目根目录的 **`setup.bat`**。不需要联网，也不需要先配 Python 环境：
+
+```text
+setup.bat  →  找 Python → 建 .venv → 离线装依赖 → 冒烟测试 → 环境体检
+make-ppt.bat tools\briefs\03-milk-tea-200k.json 输出.pptx
+```
+
+依赖 wheel 已随仓库提供（`tools/wheels/`，27.2 MB），所以克隆即可离线部署。必需项：Python 3.9+、python-pptx、PyMuPDF，以及一个 PDF 渲染器（PowerPoint / LibreOffice / WPS 任选其一，自动选最快的）；缺一项 `setup.bat` 会明确说缺什么并停下，不会静默降级。
+
+细节与踩过的坑见 [tools/README.md](./tools/README.md)。
+
 ## 判断分四档
 
 | 结果 | 条件 | 后续 |

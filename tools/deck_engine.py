@@ -18,6 +18,14 @@ import os
 import subprocess
 import sys
 
+# 中文 Windows 的控制台默认不是 UTF-8，不加这段中文提示会变乱码。
+# 必须放在缺依赖提示之前，否则「缺 python-pptx」那条本身就看不清。
+for _s in (sys.stdout, sys.stderr):
+    try:
+        _s.reconfigure(encoding='utf-8', errors='replace')
+    except (AttributeError, ValueError):
+        pass
+
 try:
     from pptx import Presentation
 except ImportError:

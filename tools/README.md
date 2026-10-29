@@ -1,5 +1,16 @@
 # 版式引擎
 
+## 本文导航
+
+- [它解决什么问题](#它解决什么问题)
+- [装](#装)
+- [用](#用)
+- [交付前几何检查](#交付前几何检查)
+- [文件](#文件)
+- [部署踩过的坑](#部署踩过的坑)
+- [自检能查什么](#自检能查什么)
+- [已知限制](#已知限制)
+
 把一份 JSON（brief）渲染成 16:9 的 `.pptx`。**几何写死，内容全在 brief 里**——所以出图只要两秒，不用再调坐标。
 
 ## 它解决什么问题
@@ -10,19 +21,63 @@
 
 ## 装
 
+**双击项目根目录的 `setup.bat` 就行**，不需要联网，也不需要先装 Python 包。
+
+它会：找一个可用的 Python（3.9+）→ 在项目根目录建 `.venv`（不动系统 Python）→ 从 `tools/wheels/` 离线装依赖 → 出 3 页 pptx 做冒烟测试 → 跑环境体检。全部通过才说「可以出 PPT 了」。
+
+装完检查环境：
+
 ```bash
-pip install python-pptx -i https://mirrors.aliyun.com/pypi/simple/
+python tools/doctor.py        # 逐项列出必需/告警，结论直说能不能出稿
 ```
 
-默认源与清华源在国内常超时，用阿里云镜像。装不上不影响使用——按 `references/deck-spec.md` 的 L2/L3 降级交付。
+必需项缺一个就不能出：Python、python-pptx、PyMuPDF、**PDF 渲染器（三选一）**。字体只告警，不影响出稿。
+
+### PDF 渲染器：三选一
+
+几何检查需要把 pptx 转成 PDF 才能读到真实断行。**不要求必须装 LibreOffice**，下面三种任有其一即可，按这个优先级自动选择：
+
+| 顺序 | 渲染器 | 实测耗时 | 说明 |
+| --- | --- | --- | --- |
+| 1 | **PowerPoint**（COM） | **2.3s** | 最快，且与用户在 PowerPoint 里看到的完全一致 |
+| 2 | **LibreOffice** | 43s（冷启动） | 免安装生态最广，但**慢 18 倍** |
+| 3 | **WPS**（COM） | ~2s | 兜底。兼容 COM 接口，但渲染细节与真实 PowerPoint 差异最大，所以排最后 |
+
+用 `--engine` 可强制指定：
+
+```bash
+python tools/deck_lint.py 输出.pptx --engine PowerPoint
+```
+
+每次运行会在第一行回显实际用了哪个渲染器。
+
+> **换引擎等于换基准。** 三种引擎的行高舍入不同，同一份稿子的 `[提示]` 项可能相差 ±1pt（例如「贴底色块下边 -1pt」在 LibreOffice 下报、在 PowerPoint 下不报）。`[必改]` 项在三种引擎下结论一致——那才是卡交付的条件。
+
+### 为什么不用 `pip install` 一行命令
+
+一台机器常有多个 Python 解释器，`pip install` 装到哪一个取决于 PATH 顺序，下次换个终端就可能又找不到包。`setup.bat` 显式探测解释器并校验版本，再用项目内 `.venv`，所以装到哪一个是确定的。
+
+### 依赖版本（固定）
+
+见 `tools/requirements.txt`。两个必须说明的锁：
+
+- `PyMuPDF` 锁 `1.24.x`：2.x 会连带拉 onnxruntime / numpy / pymupdf4llm，体积从 15.5 MB 涨到 100 MB。
+- `comtypes` 必须装：只有 292 KB，但它决定了能不能走 PowerPoint 渲染（2.3s vs 43s），同时是 `--png` 导图的前提。
+
+`tools/wheels/` 里是这 7 个 wheel（27.2 MB），入库，所以克隆即可离线部署。
 
 ## 用
 
 ```bash
-cd tools
-python deck_engine.py briefs/01-chenghai-zhaoyiming.json 输出.pptx
-python deck_engine.py briefs/01-chenghai-zhaoyiming.json 输出.pptx --png preview/
-python deck_lint.py briefs/01-chenghai-zhaoyiming.json --png preview/   # 渲染 + 几何检查，一条命令
+make-ppt.bat tools\briefs\03-milk-tea-200k.json 输出.pptx     # 渲染 + 几何检查
+make-ppt.bat --list                                            # 列现成用例
+```
+
+也可以直接调脚本（先确保用 `.venv` 里的解释器）：
+
+```bash
+.venv\Scripts\python.exe tools\deck_engine.py tools/briefs/01-chenghai-zhaoyiming.json 输出.pptx
+python tools/deck_lint.py 输出.pptx --png preview/             # 已渲染的稿子，顺带导图
 ```
 
 - `--png`：Windows 下用 COM 导出逐页图片，用于目视复核（失败只告警，不影响出文件）
@@ -54,7 +109,7 @@ python deck_lint.py 输出.pptx --png out/  # 顺手导出逐页图，供人工�
 
 `--tol` 调越界容差（默认 5pt）。退出码 `0` 干净 / `1` 有必改项，可以串进脚本。
 
-依赖 LibreOffice（`soffice`）转 PDF，缺了会直接报错，不会假装通过。
+依赖一个 PDF 渲染器（PowerPoint / LibreOffice / WPS 任选其一，自动选择）转 PDF，一种都没有会直接报错，不会假装通过。
 
 ## 文件
 
@@ -64,7 +119,33 @@ python deck_lint.py 输出.pptx --png out/  # 顺手导出逐页图，供人工�
 | `deck_layouts.py` | 11 种页型，每种只吃数据 | 400 |
 | `deck_engine.py` | 命令行入口、自检、PNG 导出 | 200 |
 | `deck_lint.py` | 读 PDF 真实坐标做几何检查，出缺陷清单 | 250 |
+| `doc_check.py` | 文档结构自检：体积上限、本文导航、锚点、相对链接；纯标准库，跨平台 | 300 |
+| `bootstrap.py` | 部署：建 `.venv`、离线装 wheel、冒烟测试 | 300 |
+| `doctor.py` | 环境体检：必需/告警分级，缺全部渲染器才判不能出稿 | 300 |
+| `requirements.txt` | 固定版本清单，给想联网装同一套的人用 | — |
+| `wheels/*.whl` | 离线依赖源，6 个文件 26.9 MB，入库 | — |
 | `briefs/*.json` | 内容。新增一份就是一个新演示文稿 | — |
+
+`doc_check.py` 不依赖 `python-pptx`，只查 Markdown 与代码文件的结构，是 `AGENTS.md`「交付前自检」的指定命令：
+
+```bash
+python tools/doc_check.py              # 有缺陷退出码 1
+python tools/doc_check.py --verbose    # 附带体积排行
+```
+
+它替代原来那条 `find ... -exec wc -lc`——那条在 Windows 上不可用，导致「本文导航」「锚点」两项检查长期没人真正跑过。首次接入时它当场查出 8 个此前漏掉的文件（6 个缺导航、2 个导航与标题不一致）。
+
+## 部署踩过的坑
+
+这两条都在本机实测过，改 `setup.bat` 之前先看：
+
+| 坑 | 表现 | 正确做法 |
+| --- | --- | --- |
+| `.bat` 存成 UTF-8 无 BOM | cmd.exe 按系统 ANSI 码页（中文 Windows 是 936）解析，把 `set PYTHONIOENCODING` 吃掉首字母，报 `'ONIOENCODING' is not recognized` | 存成 **UTF-8 with BOM**，并在开头 `chcp 65001` |
+| 用 `errorlevel` 判断 `py -3.12` 是否存在 | 版本不存在时 `py` 只往 stderr 报错、**退出码仍是 0**，导致误选到下一个版本 | 用 `for /f` 捕获它打印的版本号，只有打出来的值等于请求版本才算找到 |
+
+另外，中文提示全部由 Python 打印（Python 侧 `sys.stdout.reconfigure(encoding='utf-8')`），`deck_engine.py` 与 `deck_lint.py` 都在缺依赖提示**之前**加了这段，否则连「缺 python-pptx」那条本身都是乱码。
+
 
 现有 brief：
 

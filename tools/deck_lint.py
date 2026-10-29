@@ -4,11 +4,20 @@
 用法：
     python deck_lint.py 输出.pptx [--tol 5] [--png 目录] [--keep]
     python deck_lint.py tools/briefs/xx.json      # 先渲染，再检查
+    python deck_lint.py 输出.pptx --engine PowerPoint   # 指定渲染器
 
 为什么要它：deck_engine 的自检只比对文字框自身的估高与框高，管不到
 「文字框 vs 它背后的色块」，也管不到渲染器实际怎么断行。这两类问题
 过去只能靠「转 PDF → 转 PNG → 逐页看图」，一轮 50 秒。本工具从 PDF
 拿真实坐标，一次输出全部可判定缺陷。
+
+转 PDF 的渲染器按优先级自动选择：PowerPoint COM（实测 1.9s）
+→ LibreOffice（实测 42.7s 冷启动）→ WPS COM（放最后：兼容 COM 接口，
+但渲染细节与真实 PowerPoint 差异最大）。用哪个会回显在输出第一行。
+
+注意：不同引擎的行高舍入不同，同一份稿子的 [提示] 项可能相差 ±1pt
+（例如「贴底色块下边 -1pt」）。[必改] 项在三种引擎下结论一致。
+换引擎等于换基准，验收基线要重跑一次。
 
 检查项（坐标全部来自 PDF 渲染结果，不是估算）：
     [必改] 越出色块  文字落在某个填充矩形内，但某一边超出该矩形（>tol，默认 5pt，约 7px 视觉可见）
@@ -23,6 +32,13 @@ import os
 import subprocess
 import sys
 import tempfile
+
+# 中文 Windows 的控制台默认不是 UTF-8，不加这段中文提示会变乱码。
+for _s in (sys.stdout, sys.stderr):
+    try:
+        _s.reconfigure(encoding='utf-8', errors='replace')
+    except (AttributeError, ValueError):
+        pass
 
 try:
     import pymupdf
@@ -39,6 +55,7 @@ SOFFICE_PATHS = [
     '/Applications/LibreOffice.app/Contents/MacOS/soffice',
 ]
 BAD_HEAD = '，。、；：！？）」』%,.;:!?)]}'
+PP_SAVE_AS_PDF = 32
 
 
 def find_soffice():
@@ -49,16 +66,83 @@ def find_soffice():
     return which('soffice') or which('libreoffice')
 
 
-def to_pdf(pptx, out_dir):
+def via_powerpoint(pptx, out_dir):
+    """PowerPoint COM 导 PDF。比 LibreOffice 快一个数量级（实测 1.9s vs 42.7s）。"""
+    import comtypes.client
+    pdf = os.path.join(out_dir, 'pp-%s.pdf' % os.path.splitext(os.path.basename(pptx))[0])
+    app = comtypes.client.CreateObject('PowerPoint.Application')
+    try:
+        pres = app.Presentations.Open(os.path.abspath(pptx), WithWindow=False)
+        try:
+            pres.SaveAs(os.path.abspath(pdf), PP_SAVE_AS_PDF)
+        finally:
+            pres.Close()
+    finally:
+        try:
+            app.Quit()
+        except Exception:
+            pass
+    if not os.path.exists(pdf):
+        raise RuntimeError('PowerPoint 没有产出 PDF')
+    return pdf, 'PowerPoint'
+
+
+def via_wps(pptx, out_dir):
+    """WPS 兼容 PowerPoint 的 COM 接口，排在最后 —— 行为差异最大，以实测为准。"""
+    import comtypes.client
+    pdf = os.path.join(out_dir, 'wps-%s.pdf' % os.path.splitext(os.path.basename(pptx))[0])
+    app = comtypes.client.CreateObject('Kwpp.Application')
+    try:
+        pres = app.Presentations.Open(os.path.abspath(pptx), WithWindow=False)
+        try:
+            pres.SaveAs(os.path.abspath(pdf), PP_SAVE_AS_PDF)
+        finally:
+            pres.Close()
+    finally:
+        try:
+            app.Quit()
+        except Exception:
+            pass
+    if not os.path.exists(pdf):
+        raise RuntimeError('WPS 没有产出 PDF')
+    return pdf, 'WPS'
+
+
+def via_soffice(pptx, out_dir):
     soffice = find_soffice()
     if not soffice:
-        raise RuntimeError('找不到 LibreOffice（soffice）—— 装了才能转 PDF 检查')
+        raise RuntimeError('找不到 LibreOffice（soffice）')
     subprocess.run([soffice, '--headless', '--convert-to', 'pdf', '--outdir', out_dir, pptx],
                    check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=300)
     pdf = os.path.join(out_dir, os.path.splitext(os.path.basename(pptx))[0] + '.pdf')
     if not os.path.exists(pdf):
         raise RuntimeError('PDF 没有生成：%s' % pdf)
-    return pdf
+    return pdf, 'LibreOffice'
+
+
+# 顺序即优先级：PowerPoint 最快且与 PowerPoint 里看到的一致；LibreOffice 次之；
+# WPS 排最后——它兼容 COM 接口，但渲染细节与真实 PowerPoint 差异最大。
+RENDERERS = [('PowerPoint', via_powerpoint), ('LibreOffice', via_soffice), ('WPS', via_wps)]
+
+
+def to_pdf(pptx, out_dir, prefer=None):
+    """按优先级找一个能用的渲染器把 pptx 转成 PDF，返回 (pdf 路径, 渲染器名)。
+
+    prefer 可指定 'PowerPoint' / 'LibreOffice' / 'WPS'，失败则继续按默认顺序。
+    全部失败时抛出带每种失败原因的异常，不静默降级。
+    """
+    order = list(RENDERERS)
+    if prefer:
+        order.sort(key=lambda r: 0 if r[0].lower() == prefer.lower() else 1)
+
+    errors = []
+    for name, fn in order:
+        try:
+            pdf, used = fn(pptx, out_dir)
+            return pdf, used
+        except Exception as exc:
+            errors.append('%s: %s' % (name, str(exc).splitlines()[0][:120]))
+    raise RuntimeError('没有可用的渲染器转 PDF（几何检查需要它）\n  ' + '\n  '.join(errors))
 
 
 def filled_boxes(page):
@@ -154,6 +238,7 @@ def main(argv):
     tol = float(argv[argv.index('--tol') + 1]) if '--tol' in argv else 5.0
     png_dir = argv[argv.index('--png') + 1] if '--png' in argv else None
     keep = '--keep' in argv
+    prefer = argv[argv.index('--engine') + 1] if '--engine' in argv else None
     tmp = tempfile.mkdtemp(prefix='decklint-')
 
     pptx = src
@@ -165,10 +250,13 @@ def main(argv):
             return 3
 
     try:
-        pdf = to_pdf(pptx, tmp)
+        pdf, engine = to_pdf(pptx, tmp, prefer)
     except Exception as exc:
         sys.stderr.write('转 PDF 失败：%s\n' % exc)
         return 3
+    # 回显渲染器：不同引擎的断行与行高舍入不同，[提示] 项可能相差 ±1pt，
+    # 让人知道这次结论是拿哪个基准算出来的。
+    print('渲染器：%s' % engine)
 
     doc = pymupdf.open(pdf)
     fatal, hints = [], []

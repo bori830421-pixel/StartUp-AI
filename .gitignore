@@ -13,3 +13,8 @@ Thumbs.db
 # 渲染产物：brief.json 才是源，pptx 由 tools/deck_engine.py 重跑即可
 *.pptx
 .tmp-deckcheck/
+
+# 部署产物：setup.bat 生成，不入库（tools/wheels/ 才入库，那是离线依赖源）
+.venv/
+__pycache__/
+*.pyc
