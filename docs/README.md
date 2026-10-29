@@ -11,7 +11,7 @@
 | [architecture-map.md](./architecture-map.md) | 产品目的、主流程、能力模块、数据边界、文件边界 | 现行 |
 | [capability-index.md](./capability-index.md) | 能力清单、成熟度状态、对应样例、条目编写约定 | 现行 |
 | [verification-guide.md](./verification-guide.md) | 验收场景、交付前检查、闸门退化形态、文档变更验证方式 | 现行 |
-| [decisions/](./decisions/) | 决策记录，一主题一文件，编号连续 | 12 份 |
+| [decisions/](./decisions/) | 决策记录，一主题一文件，编号连续 | 14 份 |
 
 ## 决策记录
 
@@ -31,6 +31,8 @@
 | [0010](./decisions/0010-deck-engine.md) | 版式引擎：只排版不判断，三级降级 | 已采纳 |
 | [0011](./decisions/0011-h1-channel-quantity.md) | H1：渠道不能单独充数，至少 3 个要说清背后客户量 | 已采纳 |
 | [0012](./decisions/0012-industry-taxonomy.md) | 行业分类：以国标门类为骨架，不为行业建原型 | 已采纳 |
+| [0013](./decisions/0013-skill-distribution.md) | 分发形态：仓库不是安装单元，产物在 `dist/startup-guide/` | 已采纳 |
+| [0014](./decisions/0014-mcp-boundary.md) | MCP 边界：只包确定性计算，暴露 resources 让无文件系统的宿主也能读全文 | 已采纳 |
 
 ## 新增约定
 

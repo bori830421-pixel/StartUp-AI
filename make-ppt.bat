@@ -8,7 +8,7 @@ REM ===================================================================
 REM  出 PPT：渲染 + 几何检查
 REM
 REM  用法：
-REM    make-ppt.bat tools\briefs\03-milk-tea-200k.json 输出.pptx
+REM    make-ppt.bat tools\briefs\01-chenghai-zhaoyiming.json 输出.pptx
 REM    make-ppt.bat --list                  列出现有用例
 REM    make-ppt.bat b.json out.pptx --png   顺带导出逐页图
 REM
@@ -104,14 +104,14 @@ echo 现成用例（tools\briefs\）：
 echo.
 for %%F in ("tools\briefs\*.json") do echo   %%~nxF
 echo.
-echo 用法：make-ppt.bat tools\briefs\03-milk-tea-200k.json 输出.pptx
+echo 用法：make-ppt.bat tools\briefs\01-chenghai-zhaoyiming.json 输出.pptx
 echo.
 exit /b 0
 
 :usage
 echo.
 echo 用法：
-echo   make-ppt.bat tools\briefs\03-milk-tea-200k.json 输出.pptx
+echo   make-ppt.bat tools\briefs\01-chenghai-zhaoyiming.json 输出.pptx
 echo   make-ppt.bat --list        列出现有用例
 echo   make-ppt.bat b.json o.pptx --png preview\    顺带导出逐页图
 echo.

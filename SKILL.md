@@ -1,9 +1,17 @@
 ---
 name: startup-guide
 description: 面向创业新手的评估与陪跑技能。用户说出方向和预算后，先识别生意原型并按原型生成检索计划，从网上取当前的政策、成本与平台规则，再做启动条件体检并给出明确判断：可以启动才进入分阶段陪跑，不可以启动就说明卡在哪里。适用于方向评估、预算与时间测算、零启动资金路径和早期落地。
+license: MIT
+compatibility: 纯 Markdown 规则，无运行时依赖，需能读文件的宿主。联网检索是可选能力，缺失时按 references/offline-degradation.md 降级，结论封顶在「信息不足」。只有生成 pptx 时需要 Python 3.9+ 与 python-pptx，缺失时降级为可粘贴文案。支持 MCP 的宿主可改用 tools/mcp_server.py（零依赖，5 个只读工具 + 全量 resources），工具只算数，判断仍在本文件。
+metadata:
+  version: "0.4.0"
+  updated: "2026-10-30"
+  install-unit: "dist/startup-guide"
 ---
 
 # 创业指南技能
+
+> 安装与接入见 [INSTALL.md](./INSTALL.md)。安装目录名必须是 `startup-guide`，与 frontmatter 的 `name` 一致。
 
 ## 本文导航
 
@@ -204,7 +212,7 @@ P3 收定金前必须给需求确认单，把范围、交付日与加项价目�
 
 ## 必须遵守
 
-- 按 `AGENTS.md` 执行项目规则。
+- 维护本仓库时按 `AGENTS.md` 执行；作为已安装技能运行时，本文件就是全部规则，不需要找 `AGENTS.md`。
 - 先识别生意原型，再推演。不为每个行业单独建档，用七种原型的结构去覆盖。
 - 每次评估都要跑检索循环（`references/runtime-loop.md`），查询串用 `references/search-playbook.md` 的模板，判断口径按 `references/research-protocol.md`：结构靠推演，参数靠实测，事实靠原文。只查原型卡列出的必查项，查不到就直说。
 - 检索预算 = 线上必查项 × 2，上限 12 个；线下必查项不占预算，转成用户动作。宁可交一份标注了空缺的判断，也不要搜十轮拼一个看起来完整的答案。静态卡片只决定搜什么，不提供结论。
@@ -224,8 +232,8 @@ P3 收定金前必须给需求确认单，把范围、交付日与加项价目�
 
 入口只列到目录一级，目录内的文件清单看各自的 `README.md`。本文件已接近建议上限，新增流程细节一律进 `references/`，这里只留摘要加链接。
 
-- [项目说明](./README.md)、[项目规则](./AGENTS.md)
-- [文档目录索引](./docs/README.md)：架构地图、能力索引、验证指南、决策记录
+- 安装单元是 `dist/startup-guide/`（由 `tools/build_skill.py` 生成）。`README.md`、`AGENTS.md`、`docs/`、`tools/README.md`、`tools/wheels/` 属维护者资料，**不在安装单元内**，正文不链接它们。
 - [参考模板索引](./references/README.md)：引导盘点、模式分叉、运行时检索与查询串、评分口径、陪跑与输出模板
+- [分宿主接入](./hosts/README.md)：目录技能 / MCP / 纯文本三形态的落点与各自的坑；不确定用哪种就不看，按 `INSTALL.md` 第 2 节的表判定
 - [行为样例索引](./examples/README.md)、[数据层索引](./data/README.md)：数据分级、原型库、行业卡（检索缓存）
-- [版式引擎](./tools/README.md)：brief 格式、11 种页型、一条命令出 pptx（只在用户要文件时用）
+- 版式引擎：`tools/deck_engine.py`，只在用户要文件时用；页序与降级规则见 `references/deck-spec.md` 第 6 节。

@@ -2,6 +2,19 @@
 
 一个面向创业新手的 AI 技能。你说出想做的方向和手里的钱，它先判断「现在该不该开始」；判断可以做，才进入分阶段陪跑，帮你把第一笔钱挣到。
 
+## 本文导航
+
+- [它解决什么问题](#它解决什么问题)
+- [当前状态](#当前状态)
+- [目录](#目录)
+- [怎么用](#怎么用)
+- [部署（要出 PPT 才需要）](#部署要出-ppt-才需要)
+- [判断分四档](#判断分四档)
+- [判断依据从哪来](#判断依据从哪来)
+- [设计原则](#设计原则)
+- [边界](#边界)
+- [文档入口](#文档入口)
+
 ## 它解决什么问题
 
 新手最缺的不是更多的分析，而是一句能信的判断。
@@ -16,19 +29,42 @@
 
 ## 当前状态
 
-文档框架阶段。已有规则、能力边界、28 个验收场景和 21 个行为样例；除 `tools/` 下的版式引擎外，没有实现代码、数据存储或外部集成。
+规则与接入框架阶段。已有规则、能力边界、28 个验收场景、22 个行为样例，以及三种可安装形态（目录技能 / 单文件 / MCP）。除 `tools/` 下的版式引擎、构建校验与 MCP 服务端外，没有数据库、后端或外部服务集成。
+
+可安装：仓库不是安装单元，`dist/startup-guide/` 才是。它已入库，克隆即可用，不必先装 Python；改了源文件才需要重建。
+
+```bash
+python tools/build_skill.py     # 重建 dist/startup-guide/（73 个文件，约 484 KB）
+python tools/build_flat.py      # 重建单文件形态 dist/startup-guide.flat.txt
+python tools/skill_check.py     # 校验规范、体积、死链、阈值一致性与产物是否过期
+```
+
+三种形态都已支持：目录技能（首选）、单文件注入（只有对话框的宿主）、MCP（`tools/mcp_server.py`，零依赖）。装法与验证见 [INSTALL.md](./INSTALL.md)，各形态细节见 [hosts/](./hosts/README.md)。
+
+**还没验证的三件事。** 已实现不等于已验证，这三条是目前明确没做到的：
+
+| 缺口 | 现在做到哪 | 怎么补 |
+| --- | --- | --- |
+| MCP 在真实客户端联调 | 管道级协议测试全通（`initialize` / `tools/list` / `tools/call` / `resources/list` / `prompts/get`），`--selftest` 15 项断言，装到安装位置后从任意目录复跑通过 | 按 `hosts/mcp.md` 配一次，工具列表出现且 `capital_band` 返回 B 档 |
+| 单文件形态在纯文本宿主实跑 | `build_flat.py --check` 保证与源逐字节一致；实际 41 KB / 781 行的 token 开销没测过 | 全文贴进网页版对话，跑 `INSTALL.md` 第 3 节那句验证 |
+| 09 / 12 / 16 三个冒烟用例 | 只有 `install` 用例用真实输出跑过；另三个仅内置正样本 | `python tools/skill_smoke.py --input 09 12 16`，回复存文件后 `--check` |
+
+这三条都不阻塞安装：`dist/startup-guide/` 已在仓库里，克隆即可用。逐条判据与不合格时的处理顺序见 [验证指南](./docs/verification-guide.md) 的「接入形态的验证缺口」。
 
 ## 目录
 
 | 路径 | 内容 |
 | --- | --- |
 | `SKILL.md` | 技能入口：两阶段流程与硬约束 |
+| `INSTALL.md` | 安装与接入：三种宿主形态、30 秒验证、失败处理 |
+| `hosts/` | 分宿主接入页：目录技能 / MCP / 纯文本三形态的落点与坑 |
+| `dist/` | 安装产物：`startup-guide/`（目录形态）与 `startup-guide.flat.txt`（单文件形态），由脚本生成、入库、不手改 |
 | `AGENTS.md` | 项目协作与维护规则 |
 | `docs/` | 架构地图、能力索引、验证指南、决策记录 |
-| `data/` | 行业分类骨架（国标 20 门类）、数据分级规则、原型卡、行业卡（检索缓存） |
+| `data/` | 行业分类骨架（国标 20 门类）、数据分级规则、原型卡、行业卡（检索缓存）、`params.json`（阈值镜像） |
 | `references/` | 引导盘点题目、资金带分层、模式分叉、运行时检索与查询串、体检评分口径、陪跑模板 |
 | `examples/` | 行为样例，每个对应一个验收场景 |
-| `tools/` | 版式引擎：吃 brief（JSON）出 pptx，只做排版不做判断 |
+| `tools/` | 版式引擎（出 pptx）、安装构建与校验、MCP 服务端；只做排版与计算，不做判断 |
 
 ## 怎么用
 
@@ -44,7 +80,7 @@
 
 ```text
 setup.bat  →  找 Python → 建 .venv → 离线装依赖 → 冒烟测试 → 环境体检
-make-ppt.bat tools\briefs\03-milk-tea-200k.json 输出.pptx
+make-ppt.bat tools\briefs\01-chenghai-zhaoyiming.json 输出.pptx
 ```
 
 依赖 wheel 已随仓库提供（`tools/wheels/`，27.2 MB），所以克隆即可离线部署。必需项：Python 3.9+、python-pptx、PyMuPDF，以及一个 PDF 渲染器（PowerPoint / LibreOffice / WPS 任选其一，自动选最快的）；缺一项 `setup.bat` 会明确说缺什么并停下，不会静默降级。
@@ -110,7 +146,8 @@ make-ppt.bat tools\briefs\03-milk-tea-200k.json 输出.pptx
 
 入口只列到目录一级，目录内的文件清单看各自的 `README.md`。
 
-- [项目规则](./AGENTS.md)：含「文件规模与导航约束」，规定单文件上限与三级索引
+- [项目规则](./AGENTS.md)：含「文件规模与导航约束」与「分发与打包约束」
+- [安装与接入](./INSTALL.md)：装到哪个目录、怎么验、失败怎么处理
 - [文档目录索引](./docs/README.md)：架构地图、能力索引、验证指南、决策记录
 - [参考模板索引](./references/README.md)：引导盘点、模式分叉、运行时检索与查询串、评分口径、陪跑与输出模板
 - [行为样例索引](./examples/README.md)

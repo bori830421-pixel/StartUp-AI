@@ -9,6 +9,7 @@ Thumbs.db
 
 # 本地记忆与临时文件
 .workbuddy-ai/
+.workbuddy/
 
 # 渲染产物：brief.json 才是源，pptx 由 tools/deck_engine.py 重跑即可
 *.pptx
@@ -18,3 +19,7 @@ Thumbs.db
 .venv/
 __pycache__/
 *.pyc
+
+# 分发产物：tools/build_skill.py 生成，但**入库**——克隆即可安装，不必先装 Python。
+# 不手改；与源文件不一致时 tools/skill_check.py 会报「产物已过期」。
+# dist/

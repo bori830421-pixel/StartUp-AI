@@ -123,7 +123,7 @@ SMOKE_BRIEF = {
               "num": "必需", "unit": "LibreOffice"},
          ]},
         {"type": "closing", "statement": ["现在可以出 PPT 了"],
-         "supports": ["make-ppt.bat briefs/03-milk-tea-200k.json 输出.pptx"],
+         "supports": ["make-ppt.bat briefs/01-chenghai-zhaoyiming.json 输出.pptx"],
          "footer": "StartUp-AI 自检通过"},
     ],
 }

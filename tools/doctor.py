@@ -75,11 +75,12 @@ def check_module(name, label):
 
 
 def check_renderer():
-    """几何检查要靠一个渲染器把 pptx 转 PDF。三选一，不是必须装 LibreOffice。
+    """几何检查要靠一个渲染器把 pptx 转 PDF。三选一，不要求装哪一个。
 
-    顺序与 deck_lint.to_pdf 一致：PowerPoint 最快（实测 1.9s，与在 PowerPoint
-    里看到的一致），LibreOffice 次之（42.7s 冷启动），WPS 最后（渲染细节与
-    真实 PowerPoint 差异最大，只作兜底）。
+    顺序与 deck_lint.to_pdf 一致：PowerPoint > LibreOffice > WPS。
+
+    全部靠运行时探测，不假设任何一种存在：别人的机器上可能只装了 LibreOffice，
+    也可能三种都没有。三种都没有时返回 False，由 main 判「不能出稿」。
     """
     if not os.path.exists(VENV_PY):
         return False, "先跑 setup.bat", ""
@@ -194,7 +195,7 @@ def main() -> int:
                 echo("          3) WPS Office —— 兜底，渲染细节可能与 PowerPoint 有差异")
         else:
             echo("  结论：现在可以出 PPT。")
-            echo("        make-ppt.bat briefs/03-milk-tea-200k.json 输出.pptx")
+            echo("        make-ppt.bat briefs/01-chenghai-zhaoyiming.json 输出.pptx")
         if warn:
             echo("  告警：" + "；".join(f"{r[1]}（{r[3]}）" for r in warn))
 

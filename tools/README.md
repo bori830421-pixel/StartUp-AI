@@ -35,13 +35,17 @@ python tools/doctor.py        # 逐项列出必需/告警，结论直说能不�
 
 ### PDF 渲染器：三选一
 
-几何检查需要把 pptx 转成 PDF 才能读到真实断行。**不要求必须装 LibreOffice**，下面三种任有其一即可，按这个优先级自动选择：
+几何检查需要把 pptx 转成 PDF 才能读到真实断行。**不要求必须装 LibreOffice**，下面三种任有其一即可，按这个优先级自动选择。
 
-| 顺序 | 渲染器 | 实测耗时 | 说明 |
+耗时一栏是在一台 Windows 机器上的参考值，**换个环境会差很多**（机械硬盘、杀毒软件、Office 版本都会影响）。用它的理由不是绝对速度，而是「PowerPoint 渲染的版式就是用户在 PowerPoint 里看到的那个」：
+
+| 顺序 | 渲染器 | 参考耗时 | 说明 |
 | --- | --- | --- | --- |
-| 1 | **PowerPoint**（COM） | **2.3s** | 最快，且与用户在 PowerPoint 里看到的完全一致 |
-| 2 | **LibreOffice** | 43s（冷启动） | 免安装生态最广，但**慢 18 倍** |
-| 3 | **WPS**（COM） | ~2s | 兜底。兼容 COM 接口，但渲染细节与真实 PowerPoint 差异最大，所以排最后 |
+| 1 | **PowerPoint**（COM） | 约 2s | 与用户在 PowerPoint 里看到的完全一致，所以排第一 |
+| 2 | **LibreOffice** | 冷启动较慢（数十秒量级） | 免安装生态最广，但明显慢于前两者 |
+| 3 | **WPS**（COM） | 约 2s | 兜底。兼容 COM 接口，但渲染细节与真实 PowerPoint 差异最大，所以排最后 |
+
+**三种都没有时，出稿照常，但几何检查跳过。** 这不是错误配置，是环境差异——`doctor.py` 会把这个情况标成必需项缺失并给出安装指引，是否安装由用户决定。
 
 用 `--engine` 可强制指定：
 
@@ -62,14 +66,14 @@ python tools/deck_lint.py 输出.pptx --engine PowerPoint
 见 `tools/requirements.txt`。两个必须说明的锁：
 
 - `PyMuPDF` 锁 `1.24.x`：2.x 会连带拉 onnxruntime / numpy / pymupdf4llm，体积从 15.5 MB 涨到 100 MB。
-- `comtypes` 必须装：只有 292 KB，但它决定了能不能走 PowerPoint 渲染（2.3s vs 43s），同时是 `--png` 导图的前提。
+- `comtypes` 必须装：只有 292 KB，但它决定了能不能走 PowerPoint / WPS 渲染（通常远快于 LibreOffice 冷启动），同时是 `--png` 导图的前提。
 
 `tools/wheels/` 里是这 7 个 wheel（27.2 MB），入库，所以克隆即可离线部署。
 
 ## 用
 
 ```bash
-make-ppt.bat tools\briefs\03-milk-tea-200k.json 输出.pptx     # 渲染 + 几何检查
+make-ppt.bat tools\briefs\01-chenghai-zhaoyiming.json 输出.pptx     # 渲染 + 几何检查
 make-ppt.bat --list                                            # 列现成用例
 ```
 
@@ -120,6 +124,12 @@ python deck_lint.py 输出.pptx --png out/  # 顺手导出逐页图，供人工�
 | `deck_engine.py` | 命令行入口、自检、PNG 导出 | 200 |
 | `deck_lint.py` | 读 PDF 真实坐标做几何检查，出缺陷清单 | 250 |
 | `doc_check.py` | 文档结构自检：体积上限、本文导航、锚点、相对链接；纯标准库，跨平台 | 300 |
+| `build_skill.py` | 构建可安装技能目录 `dist/startup-guide/`，剔除 `.venv` 与 wheels；安装清单见根目录 `INSTALL.md` | 200 |
+| `skill_check.py` | 校验安装产物：frontmatter 规范、目录名一致、体积、产物是否过期 | 250 |
+| `skill_smoke.py` | 接入冒烟验收：打印 4 个验收输入（INSTALL 第 3 节与样例 09/12/16），校验宿主输出形态并以退出码给结论；只验形态不判内容，维护者侧工具不进安装单元 | 300 |
+| `build_flat.py` | 生成 B 形态单文件 `dist/startup-guide.flat.txt`：SKILL.md 加 4 份关键 references 机械合并，给只有对话框的宿主当系统提示；`--check` 拦过期产物，`.txt` 载荷不占文档行数口径 | 150 |
+| `mcp_server.py` | MCP 服务端（stdio JSON-RPC，纯标准库不装 SDK）：5 个只读工具 + 全量 resources + `checkup` prompt；阈值全读 `data/params.json`，工具里不含判断。`--selftest` 断言，`--list` 看暴露面 | 300 |
+| `mcp_tools.py` | MCP 的工具层：五个只读工具与 `TOOLS` 表。只算数不下判断；拆出来是为了守住单文件 400 行上限 | 300 |
 | `bootstrap.py` | 部署：建 `.venv`、离线装 wheel、冒烟测试 | 300 |
 | `doctor.py` | 环境体检：必需/告警分级，缺全部渲染器才判不能出稿 | 300 |
 | `requirements.txt` | 固定版本清单，给想联网装同一套的人用 | — |
@@ -137,12 +147,20 @@ python tools/doc_check.py --verbose    # 附带体积排行
 
 ## 部署踩过的坑
 
-这两条都在本机实测过，改 `setup.bat` 之前先看：
+下面两条是 **Windows 平台的通用行为**，不是某台机器的特殊现象，任何中文 Windows 上都会遇到：
 
 | 坑 | 表现 | 正确做法 |
 | --- | --- | --- |
 | `.bat` 存成 UTF-8 无 BOM | cmd.exe 按系统 ANSI 码页（中文 Windows 是 936）解析，把 `set PYTHONIOENCODING` 吃掉首字母，报 `'ONIOENCODING' is not recognized` | 存成 **UTF-8 with BOM**，并在开头 `chcp 65001` |
 | 用 `errorlevel` 判断 `py -3.12` 是否存在 | 版本不存在时 `py` 只往 stderr 报错、**退出码仍是 0**，导致误选到下一个版本 | 用 `for /f` 捕获它打印的版本号，只有打出来的值等于请求版本才算找到 |
+
+这条依赖机器上装了什么，**不保证任何环境都有**：
+
+| 依赖 | 缺了会怎样 | 怎么处理 |
+| --- | --- | --- |
+| PowerPoint / WPS / LibreOffice | 几何检查转不了 PDF | 三者任选其一（见「装」一节的渲染器表），`doctor.py` 会告警 |
+| 微软雅黑字体 | 用替代字体，版式可能偏移 | 只告警，不拦出稿 |
+| comtypes | `--png` 导图不可用 | 已随 wheels 安装，正常都有 |
 
 另外，中文提示全部由 Python 打印（Python 侧 `sys.stdout.reconfigure(encoding='utf-8')`），`deck_engine.py` 与 `deck_lint.py` 都在缺依赖提示**之前**加了这段，否则连「缺 python-pptx」那条本身都是乱码。
 
@@ -175,7 +193,7 @@ python tools/doc_check.py --verbose    # 附带体积排行
 
 - 中文字体写死 `微软雅黑`，英文 `Arial`。换字体改 `deck_kit.py` 的 `EA` / `LATIN`。
 - 文本宽度是估算（全角按 1 字号、半角按 0.55 字号），所以 `[提示]` 会有误报，不会漏报。真实断行只有渲染出来才知道——以 `deck_lint.py` 的结果为准。
-- PNG 导出依赖本机装了 PowerPoint 或 WPS 且 COM 可用。导出失败不影响 `.pptx` 本身。
+- PNG 导出依赖系统中装了 PowerPoint 或 WPS 且 COM 可用。导出失败不影响 `.pptx` 本身。
 - 只覆盖 11 种页型。需要新结构时加页型，不要用拼凑的办法硬塞。
 - 表格行数少的页（`table-card`）左下会空出一片，用可选 `left_notes`（`{title, items}`）补一段解读。不写就空着；空间不够时自动不画，宁可空着也不出界。
 - 条形图的品类名称框固定 118px，超过 6 个中文字会折行。名称写短，长名放表格里。`bar.max` 小于实际最大值时按实际最大值算，比例不会失真。

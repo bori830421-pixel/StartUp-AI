@@ -1,0 +1,16 @@
+# 版式引擎依赖（固定版本）
+#
+# 默认走离线安装：setup.bat 用 tools/wheels/ 里的同名 wheel，不联网。
+# 想联网装同一套版本时：
+#   .venv\Scripts\python.exe -m pip install -r tools/requirements.txt
+
+python-pptx==1.0.2
+
+# deck_lint.py 读 PDF 坐标用。必须锁 1.24.x：
+# 2.x 会连带拉 onnxruntime / numpy / pymupdf4llm，体积从 15.5 MB 涨到 100 MB。
+PyMuPDF==1.24.14
+
+# 调 PowerPoint / WPS 的 COM 接口转 PDF，以及 --png 逐页导图。
+# 292 KB，作用很大：有它就能用 PowerPoint 渲染（实测 2.3s），
+# 没有就只能退回 LibreOffice（43s）。非 Windows 平台装了也无害。
+comtypes==1.4.17

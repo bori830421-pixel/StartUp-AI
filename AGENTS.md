@@ -1,5 +1,7 @@
 # 项目规则
 
+> 本文件是**维护本仓库**的规则。要**使用**这个技能（给用户做创业体检），读 [SKILL.md](./SKILL.md)，不要按本文件去改文档或补索引。
+
 ## 本文导航
 
 - [项目目标](#项目目标)
@@ -7,6 +9,7 @@
 - [能力边界](#能力边界)
 - [文档维护](#文档维护)
 - [文件规模与导航约束](#文件规模与导航约束)
+- [分发与打包约束](#分发与打包约束)
 - [项目文档入口](#项目文档入口)
 
 ## 项目目标
@@ -104,11 +107,64 @@ python tools/doc_check.py
 - 这次改动是修订既有文件还是新增主题？该新建的有没有硬塞进旧文件？
 - 拆出来的文件，上层索引有没有一起改？只拆不改索引，等于把一个大文件换成一堆找不到的文件。
 
+## 分发与打包约束
+
+本仓库是项目，**不是安装单元**。安装单元是 `dist/startup-guide/`，由 `tools/build_skill.py` 生成；产物**入库**（克隆即可安装，不必先装 Python，与 `tools/wheels/` 同一取舍），但**不手改**。依据见 `docs/decisions/0013-skill-distribution.md`。
+
+三条硬事实决定了这一点：技能规范要求 frontmatter 的 `name` 等于**父目录名**且只含小写字母、数字、连字符，而仓库名 `StartUp-AI` 两条都不满足；技能安装器复制的是整个目录，仓库里混着 `.venv/` 与 27 MB 的 `tools/wheels/`；产物必须可校验，不能靠「记得重建」。
+
+### 硬约束
+
+| 约束 | 判据 | 违反后果 |
+| --- | --- | --- |
+| 安装目录名 = `name` = `startup-guide` | `^[a-z0-9]+(-[a-z0-9]+)*$`，≤64 字符 | 宿主拒绝安装，或装成用户找不到的名字 |
+| `dist/` 只由脚本生成，且与源同步提交 | 手工修改下次构建即覆盖；哈希对不上即报过期 | 源与产物分叉，用户拿到旧规则 |
+| 维护者文件不进 `dist/` | 不含 `README.md`、`AGENTS.md`、`docs/`、`tools/README.md`、`tools/wheels/` | 安装体积从 482 KB 涨到 27 MB，且死链成片 |
+| `data/params.json` 与文档一致 | 资金带切点、H2 缓冲与爬坡期、检索预算、七种原型名逐项对得上，否则 `skill_check.py` 报错 | 文档与 MCP 两套真相，用户拿到的判断和规则对不上而无人发现 |
+| 发布物必须过校验 | `python tools/skill_check.py` 退出码 0 | 带着不合规产物发布，问题由用户发现 |
+
+### 阈值只有一个来源
+
+`data/params.json` 是**机器可读镜像**，人读的规则仍在 `references/` 与 `data/` 的 Markdown 里。两边都在，但不是两套真相：`skill_check.py` 的 `check_params` 会断言切点、H2 参数、检索预算、原型名逐项一致，改单边即红。**新增阈值时同样先写文档、再同步 json，不要只改 json。**
+
+MCP 服务端（`tools/mcp_server.py`）只允许包确定性计算：分档、算数、定级、定位。**不许把判断写进代码**——判断一旦进代码，就会出现「文档里的公式」和「代码里的公式」各自漂移，而用户永远只看到其中一份。这条与决策记录 0010 是同一条边界。
+
+### 正文的可携带性
+
+`SKILL.md`、`INSTALL.md`、`references/`、`data/`、`examples/`、`hosts/` 会原样进安装单元，所以**它们不得链接维护者文件**：不写 `[说明](./README.md)`、不写「按 `AGENTS.md` 执行」。需要指向维护资料时，用纯文本说明「那不在安装单元内」，不要用相对链接。同一份内容要同时成立在两个语境里：仓库里跑得通，装到 `~/.workbuddy/skills/` 后也跑得通。这条由 `skill_check.py` 的死链检查兜住，装到别处后可复验：`python tools/skill_check.py --path <安装位置>`。
+
+`hosts/` 是分宿主接入页（目录 / MCP / 纯文本三形态），进安装单元是因为装完之后用户仍可能需要它；它不属于维护者资料，但仍不许反向链接 `docs/`。
+
+### 改了什么要重建
+
+| 改动 | 动作 |
+| --- | --- |
+| `SKILL.md`、`INSTALL.md`、`references/`、`data/`、`examples/`、`hosts/`、`tools/*.py` | 重建 + 校验 + 与源一起提交 |
+| `data/params.json` | 重建 + 校验（`check_params` 会顺带核对文档是否同步） |
+| 新增目录 | 同步 `tools/build_skill.py` 的 `TREE_GLOBS`（值为模式元组）或 `TOOL_FILES` |
+| 新增 frontmatter 字段 | 同步 `tools/skill_check.py` 的必填项 |
+| 新增 MCP 工具 | `tools/mcp_server.py` 的 `TOOLS` 表 + `--selftest` 加断言 + `hosts/mcp.md` 的工具表 |
+| 判断规则本身 | 不影响产物，但要在 `examples/` 补一个样例 |
+
+```bash
+python tools/build_skill.py        # 生成 dist/startup-guide/
+python tools/build_flat.py         # 生成 B 形态 dist/startup-guide.flat.txt
+python tools/skill_check.py        # 规范、体积、死链、params 一致性、产物是否过期
+python tools/build_flat.py --check # B 形态是否过期
+python tools/mcp_server.py --selftest  # MCP 工具断言（15 项）
+python tools/skill_smoke.py --selftest # 冒烟判据自检（正样本过、反样本命中）
+python tools/doc_check.py          # 文档结构
+```
+
+六条全过才算可发布。校验会逐文件比对哈希，所以**改了源文件忘记重建一定会被拦下**，这条不需要靠人记。仓库没有 CI，提交前手动跑就是门禁。
+
 ## 项目文档入口
 
 入口只列到目录一级，目录内的文件清单看各自的 `README.md`。
 
-- [技能说明](./SKILL.md)
+- [技能说明](./SKILL.md)：运行时入口，两阶段流程与硬约束
+- [安装与接入](./INSTALL.md)：三种宿主形态、30 秒验证、失败处理
+- [分宿主接入](./hosts/README.md)：目录技能 / MCP / 纯文本三形态的落点与坑
 - [项目说明](./README.md)
 - [文档目录索引](./docs/README.md)：架构地图、能力索引、验证指南、决策记录
 - [参考模板索引](./references/README.md)：引导盘点、模式分叉、运行时检索与查询串、评分口径、陪跑与输出模板

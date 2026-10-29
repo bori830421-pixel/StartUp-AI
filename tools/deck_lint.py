@@ -11,8 +11,8 @@
 过去只能靠「转 PDF → 转 PNG → 逐页看图」，一轮 50 秒。本工具从 PDF
 拿真实坐标，一次输出全部可判定缺陷。
 
-转 PDF 的渲染器按优先级自动选择：PowerPoint COM（实测 1.9s）
-→ LibreOffice（实测 42.7s 冷启动）→ WPS COM（放最后：兼容 COM 接口，
+转 PDF 的渲染器按优先级自动选择：PowerPoint COM
+→ LibreOffice（冷启动较慢）→ WPS COM（放最后：兼容 COM 接口，
 但渲染细节与真实 PowerPoint 差异最大）。用哪个会回显在输出第一行。
 
 注意：不同引擎的行高舍入不同，同一份稿子的 [提示] 项可能相差 ±1pt
@@ -67,7 +67,7 @@ def find_soffice():
 
 
 def via_powerpoint(pptx, out_dir):
-    """PowerPoint COM 导 PDF。比 LibreOffice 快一个数量级（实测 1.9s vs 42.7s）。"""
+    """PowerPoint COM 导 PDF。通常明显快于 LibreOffice 冷启动，且版式与 PowerPoint 中一致。"""
     import comtypes.client
     pdf = os.path.join(out_dir, 'pp-%s.pdf' % os.path.splitext(os.path.basename(pptx))[0])
     app = comtypes.client.CreateObject('PowerPoint.Application')

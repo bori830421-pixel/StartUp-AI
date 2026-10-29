@@ -83,7 +83,7 @@ echo.
 echo ============================================================
 echo   [4/4] 部署完成，现在可以出 PPT 了。
 echo.
-echo   出稿：make-ppt.bat tools\briefs\03-milk-tea-200k.json 输出.pptx
+echo   出稿：make-ppt.bat tools\briefs\01-chenghai-zhaoyiming.json 输出.pptx
 echo   用例：make-ppt.bat --list
 echo ============================================================
 echo.

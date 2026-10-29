@@ -1,0 +1,259 @@
+{
+  "_note": "机器可读镜像。给脚本与 MCP 用，人读的真相仍在 references/ 与 data/ 的 Markdown 里。skill_check.py 会逐项核对本文件与文档一致，不一致即判不可发布——所以改阈值必须同时改两边，这不是两套真相，是一条链上的两个视图。",
+  "version": "1",
+  "capital_bands": [
+    {
+      "id": "B1",
+      "label": "3 千以下",
+      "lo": 0,
+      "hi": 3000,
+      "reachable": [
+        "卖时间",
+        "卖内容",
+        "卖技能（无设备）"
+      ],
+      "blocked": [
+        "卖货·轻库存",
+        "卖货·重库存",
+        "卖技能（专业设备）",
+        "买系统·加盟",
+        "生产制造"
+      ],
+      "fatal": "没有试错预算，第一次定价定生死"
+    },
+    {
+      "id": "B2",
+      "label": "3 千–1 万",
+      "lo": 3000,
+      "hi": 10000,
+      "reachable": [
+        "卖技能（小设备）",
+        "卖货·轻库存（无货源）"
+      ],
+      "blocked": [
+        "卖货·重库存",
+        "买系统·加盟",
+        "生产制造"
+      ],
+      "fatal": "设备买回来不等于有单"
+    },
+    {
+      "id": "B3",
+      "label": "1 万–3 万",
+      "lo": 10000,
+      "hi": 30000,
+      "reachable": [
+        "卖技能（专业设备）",
+        "卖货·轻库存（备货）",
+        "摆摊"
+      ],
+      "blocked": [
+        "买系统·加盟",
+        "生产制造"
+      ],
+      "fatal": "首批备货 + 押金同时压上来"
+    },
+    {
+      "id": "B4",
+      "label": "3 万–10 万",
+      "lo": 30000,
+      "hi": 100000,
+      "reachable": [
+        "卖货·轻库存（固定摊位/小店）",
+        "卖技能（团队化）"
+      ],
+      "blocked": [
+        "买系统·加盟（成熟品牌）",
+        "生产制造"
+      ],
+      "fatal": "固定成本出现，收入波动直接打到现金流"
+    },
+    {
+      "id": "B5",
+      "label": "10 万–30 万",
+      "lo": 100000,
+      "hi": 300000,
+      "reachable": [
+        "卖货·重库存",
+        "社区小店",
+        "小品牌加盟"
+      ],
+      "blocked": [
+        "生产制造（除代工）"
+      ],
+      "fatal": "爬坡期，前几个月净流出"
+    },
+    {
+      "id": "B6",
+      "label": "30 万–100 万",
+      "lo": 300000,
+      "hi": 1000000,
+      "reachable": [
+        "成熟品牌加盟",
+        "小生产",
+        "堂食餐饮"
+      ],
+      "blocked": [],
+      "fatal": "账期 + 爬坡期 + 设备不可逆"
+    }
+  ],
+  "band_notes": {
+    "boundaries": [
+      "3 千：有设备 / 没设备",
+      "1 万：押金开始出现",
+      "3 万：首批备货和押金同时压上来",
+      "10 万：装修成为主要成本项",
+      "30 万：个人创业担保贷款上限"
+    ],
+    "ceiling": 1000000,
+    "beyond": "超过 100 万，问题从「我一个人能不能做」变成「要不要雇人、要不要投资」，不是本技能回答的范围",
+    "must_ask": [
+      "最低启动现金",
+      "月度固定支出（含生活开支）",
+      "首笔收入月数（取保守值）"
+    ]
+  },
+  "h2": {
+    "buffer_months": 1,
+    "default_ramp_months": 6,
+    "fixed_cost_min_items": 3,
+    "verdicts": [
+      "通过",
+      "不通过",
+      "信息不足"
+    ],
+    "rule_a": "可撑月数 ≥ 预计首笔收入月数 + 1",
+    "rule_b": "流动资金 ÷ 月净流出 ≥ 爬坡期 + 1"
+  },
+  "search": {
+    "multiplier": 2,
+    "cap": 12,
+    "rule": "检索预算 = 线上必查项 × 2，上限 12 个；线下必查项不占预算，转成用户动作"
+  },
+  "source_grades": {
+    "levels": {
+      "A": "官方：政府网站、法律法规、统计公报、部门办事指南",
+      "B": "行业组织与研究机构：行业协会、专业研究机构",
+      "C": "主流媒体：财经媒体、正规新闻机构",
+      "D": "利益相关方：招商加盟平台、品牌方、培训机构、代运营服务商",
+      "E": "用户生成内容：自媒体、问答、百科、论坛"
+    },
+    "domain_rules": [
+      {
+        "match": "endswith",
+        "value": ".gov.cn",
+        "grade": "A"
+      },
+      {
+        "match": "endswith",
+        "value": ".gov",
+        "grade": "A"
+      },
+      {
+        "match": "endswith",
+        "value": ".edu.cn",
+        "grade": "B"
+      },
+      {
+        "match": "contains",
+        "value": "jiameng",
+        "grade": "D"
+      },
+      {
+        "match": "contains",
+        "value": "franchise",
+        "grade": "D"
+      },
+      {
+        "match": "prefix",
+        "value": "jm.",
+        "grade": "D"
+      },
+      {
+        "match": "prefix",
+        "value": "zs.",
+        "grade": "D"
+      }
+    ],
+    "known_sites": {
+      "stats.gov.cn": "A",
+      "mohrss.gov.cn": "A",
+      "samr.gov.cn": "A",
+      "npc.gov.cn": "A",
+      "court.gov.cn": "A",
+      "ce.cn": "C",
+      "yicai.com": "C",
+      "caixin.com": "C",
+      "stcn.com": "C",
+      "21jingji.com": "C",
+      "xinhuanet.com": "C",
+      "people.com.cn": "C",
+      "zhihu.com": "E",
+      "baijiahao.baidu.com": "E",
+      "baike.baidu.com": "E",
+      "xiaohongshu.com": "E",
+      "douyin.com": "E",
+      "bilibili.com": "E",
+      "tieba.baidu.com": "E"
+    },
+    "default_grade": "E",
+    "usage": {
+      "A": "可直接引用，仍需标访问日期",
+      "B": "可引用，注意样本口径",
+      "C": "可引用，标作者与日期",
+      "D": "必须打折，优先找反证；不引用二手转述，须核对官方公开页",
+      "E": "只能当线索，需两个独立来源交叉验证"
+    },
+    "combo": {
+      "L1": "A/B/C 且多源一致 → 可写入判断，标结构性判断",
+      "L2": "A/B/C → 只能作范围参考，标日期与口径",
+      "L3": "只允许 A → 必须提示用户现场核实",
+      "L4": "任意来源 → 只进「待核实线索」，不进判断依据"
+    },
+    "downgrade": "只有一个来源的 L2 数据，降级为 L4"
+  },
+  "archetypes": [
+    {
+      "id": "time",
+      "name": "卖时间",
+      "income": "可售时长",
+      "h2_case": "A"
+    },
+    {
+      "id": "goods-light",
+      "name": "卖货·轻库存",
+      "income": "位置或流量",
+      "h2_case": "A"
+    },
+    {
+      "id": "goods-heavy",
+      "name": "卖货·重库存",
+      "income": "周转率",
+      "h2_case": "B"
+    },
+    {
+      "id": "skill",
+      "name": "卖技能与服务",
+      "income": "口碑复购",
+      "h2_case": "A"
+    },
+    {
+      "id": "content",
+      "name": "卖内容与注意力",
+      "income": "流量与变现率",
+      "h2_case": "A"
+    },
+    {
+      "id": "franchise",
+      "name": "买系统·加盟",
+      "income": "别人的品牌",
+      "h2_case": "B"
+    },
+    {
+      "id": "manufacture",
+      "name": "生产制造",
+      "income": "产能利用率",
+      "h2_case": "A"
+    }
+  ]
+}

@@ -5,5 +5,10 @@
 # Python 源码统一 LF，避免跨平台 diff 噪声
 *.py   text eol=lf
 
+# 文档与载荷统一 LF：dist/ 按字节哈希自校验，行尾转换会让 clone 后判「产物过期」
+*.md   text eol=lf
+*.json text eol=lf
+*.txt  text eol=lf
+
 # 离线 wheel 是二进制，禁止任何换行符处理
 *.whl  binary
