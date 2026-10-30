@@ -15,6 +15,10 @@
 → LibreOffice（冷启动较慢）→ WPS COM（放最后：兼容 COM 接口，
 但渲染细节与真实 PowerPoint 差异最大）。用哪个会回显在输出第一行。
 
+PowerPoint 是首选而不是「三选一之一」：它的断行与行距就是客户打开文件时看到的
+那一个，另外两个只是让几何检查不至于跑不了的兜底。所以没用上 PowerPoint 时会
+多打一行提示，让用户装完 PowerPoint 重跑 setup.bat。
+
 注意：不同引擎的行高舍入不同，同一份稿子的 [提示] 项可能相差 ±1pt
 （例如「贴底色块下边 -1pt」）。[必改] 项在三种引擎下结论一致。
 换引擎等于换基准，验收基线要重跑一次。
@@ -29,6 +33,7 @@
 退出码：0 干净；1 有必改项；2 缺依赖；3 转换或渲染失败
 """
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -66,12 +71,23 @@ def find_soffice():
     return which('soffice') or which('libreoffice')
 
 
+def is_real_powerpoint(app):
+    r"""WPS 会注册 PowerPoint.Application 这个兼容 ProgID，Name 还自称
+    "Microsoft PowerPoint"，只有 Path 露馅（本机实测：Path 指向
+    ...\Kingsoft\WPS Office\...）。拿 Path 判，误判成本最低。"""
+    path = (getattr(app, 'Path', '') or '').lower()
+    return bool(path) and 'kingsoft' not in path and 'wps' not in path
+
+
 def via_powerpoint(pptx, out_dir):
     """PowerPoint COM 导 PDF。通常明显快于 LibreOffice 冷启动，且版式与 PowerPoint 中一致。"""
     import comtypes.client
     pdf = os.path.join(out_dir, 'pp-%s.pdf' % os.path.splitext(os.path.basename(pptx))[0])
     app = comtypes.client.CreateObject('PowerPoint.Application')
     try:
+        if not is_real_powerpoint(app):
+            raise RuntimeError('COM 指向的不是 PowerPoint（Path=%s），多半是 WPS 占了同名 ProgID'
+                               % (getattr(app, 'Path', '') or '未知'))
         pres = app.Presentations.Open(os.path.abspath(pptx), WithWindow=False)
         try:
             pres.SaveAs(os.path.abspath(pdf), PP_SAVE_AS_PDF)
@@ -112,11 +128,25 @@ def via_soffice(pptx, out_dir):
     soffice = find_soffice()
     if not soffice:
         raise RuntimeError('找不到 LibreOffice（soffice）')
-    subprocess.run([soffice, '--headless', '--convert-to', 'pdf', '--outdir', out_dir, pptx],
-                   check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=300)
+    # 用隔离的临时用户配置：默认配置里的 bundled 扩展同步一旦损坏，
+    # soffice 会弹「Fatal Error: Failed to updatefile ...lastsynchronized」
+    # 并拒绝启动。换空配置即可绕开，且不污染用户自己的 LibreOffice 设置。
+    profile = tempfile.mkdtemp(prefix='decklint-lo-')
+    try:
+        # 不用 check=True：实测 soffice 会先把 PDF 写出来，再在退出阶段崩掉
+        # （退出码 0xC0000409，日志里是 HSAIL 编译失败）。按退出码判会把
+        # 已经转好的文件当失败。只认产物在不在，崩溃细节留到真失败时再报。
+        proc = subprocess.run([soffice, '--headless', '--norestore', '--nolockcheck', '--nodefault',
+                               '-env:UserInstallation=file:///' + profile.replace('\\', '/'),
+                               '--convert-to', 'pdf', '--outdir', out_dir, pptx],
+                              capture_output=True, text=True, errors='replace', timeout=300)
+    finally:
+        shutil.rmtree(profile, ignore_errors=True)
     pdf = os.path.join(out_dir, os.path.splitext(os.path.basename(pptx))[0] + '.pdf')
     if not os.path.exists(pdf):
-        raise RuntimeError('PDF 没有生成：%s' % pdf)
+        detail = (proc.stderr or proc.stdout or '').strip().splitlines()
+        raise RuntimeError('PDF 没有生成（soffice 退出码 %d）%s'
+                           % (proc.returncode, ('：' + detail[-1][:100]) if detail else ''))
     return pdf, 'LibreOffice'
 
 
@@ -125,10 +155,39 @@ def via_soffice(pptx, out_dir):
 RENDERERS = [('PowerPoint', via_powerpoint), ('LibreOffice', via_soffice), ('WPS', via_wps)]
 
 
+def pdf_text_ok(pdf):
+    """转出来的 PDF 里，文字还读不读得出来。
+
+    实测踩过的坑：LibreOffice 的 PDF 导出坏掉时，坐标全对、字体表全空，
+    每个字都被写成字形序号（\\x01\\x02…）。几何类判断仍然成立，但
+    「行首标点」「残行」会满屏误报，报告看着像跑过，结论却是假的。
+    宁可判这一路渲染器不可用，也不要出一份不可信的报告。
+    """
+    try:
+        doc = pymupdf.open(pdf)
+    except Exception:
+        return False
+    try:
+        total = good = 0
+        for page in doc:
+            for ch in page.get_text():
+                if ch.isspace():
+                    continue
+                total += 1
+                if ch.isprintable() and (ch.isascii() or '\u4e00' <= ch <= '\u9fff'
+                                         or '\u3000' <= ch <= '\u303f'
+                                         or '\uff00' <= ch <= '\uffef'):
+                    good += 1
+        return total > 0 and good / total >= 0.5
+    finally:
+        doc.close()
+
+
 def to_pdf(pptx, out_dir, prefer=None):
     """按优先级找一个能用的渲染器把 pptx 转成 PDF，返回 (pdf 路径, 渲染器名)。
 
     prefer 可指定 'PowerPoint' / 'LibreOffice' / 'WPS'，失败则继续按默认顺序。
+    「转出来了」不算成功，还要文字读得出来——否则几何检查拿不到可信基准。
     全部失败时抛出带每种失败原因的异常，不静默降级。
     """
     order = list(RENDERERS)
@@ -139,9 +198,13 @@ def to_pdf(pptx, out_dir, prefer=None):
     for name, fn in order:
         try:
             pdf, used = fn(pptx, out_dir)
-            return pdf, used
         except Exception as exc:
             errors.append('%s: %s' % (name, str(exc).splitlines()[0][:120]))
+            continue
+        if not pdf_text_ok(pdf):
+            errors.append('%s: PDF 转出来了，但文字取不出来（字体表不完整），几何检查会误报' % name)
+            continue
+        return pdf, used
     raise RuntimeError('没有可用的渲染器转 PDF（几何检查需要它）\n  ' + '\n  '.join(errors))
 
 
@@ -253,10 +316,15 @@ def main(argv):
         pdf, engine = to_pdf(pptx, tmp, prefer)
     except Exception as exc:
         sys.stderr.write('转 PDF 失败：%s\n' % exc)
+        sys.stderr.write('几何检查没有可信基准，这一层只能跳过——出稿本身不受影响。\n'
+                         '装 Microsoft PowerPoint 后重跑 setup.bat，再跑本命令。\n')
         return 3
     # 回显渲染器：不同引擎的断行与行高舍入不同，[提示] 项可能相差 ±1pt，
     # 让人知道这次结论是拿哪个基准算出来的。
     print('渲染器：%s' % engine)
+    if engine != 'PowerPoint':
+        print('提示：本次基准不是 PowerPoint。装 Microsoft PowerPoint 后重跑 setup.bat，'
+              '几何检查的结论才与你在 PowerPoint 里看到的完全一致。')
 
     doc = pymupdf.open(pdf)
     fatal, hints = [], []

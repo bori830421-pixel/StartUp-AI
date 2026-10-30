@@ -9,7 +9,9 @@
   [告警] 缺了会少一项能力，但能出稿 → 退出码仍是 0
   [信息] 只报告，不判定
 
-LibreOffice 按项目决定列为必需（deck_lint 的几何检查依赖它转 PDF）。
+渲染器分两层判：Microsoft PowerPoint 是首选，单列一行（缺了只告警，但结论区会
+单独给一段安装指引，明确让用户装完重跑 setup.bat）；LibreOffice / WPS 是兜底，
+三者全无才算不能出稿——几何检查要靠其中一个把 pptx 转 PDF。
 """
 import argparse
 import json
@@ -30,9 +32,45 @@ SOFFICE_CANDIDATES = [
 ]
 FONT = "微软雅黑"
 
+POWERPNT_CANDIDATES = [
+    r"C:\Program Files\Microsoft Office\root\Office16\POWERPNT.EXE",
+    r"C:\Program Files (x86)\Microsoft Office\root\Office16\POWERPNT.EXE",
+    r"C:\Program Files\Microsoft Office\Office16\POWERPNT.EXE",
+    r"C:\Program Files (x86)\Microsoft Office\Office16\POWERPNT.EXE",
+    "/Applications/Microsoft PowerPoint.app",
+]
+
 
 def echo(msg=""):
     print(msg, flush=True)
+
+
+def pad(text, width):
+    """按显示宽度补空格：中文占两格，不补的话各行的值列会歪。"""
+    w = sum(2 if ord(c) > 0x2E80 else 1 for c in text)
+    return text + " " * max(0, width - w)
+
+
+def find_powerpoint():
+    """找 PowerPoint 本体，不信 COM 的 ProgID。
+
+    WPS 会注册 PowerPoint.Application 这个兼容 ProgID，只探 COM 会把 WPS
+    误判成 PowerPoint——本机实测就是这样：CreateObject 成功，调用即失败。
+    所以先查安装路径与 App Paths 注册表，两者都没有才算没装。
+    """
+    for path in POWERPNT_CANDIDATES:
+        if os.path.exists(path):
+            return path
+    if os.name != "nt":
+        return None
+    for hive in ("HKLM:", "HKCU:"):
+        key = hive + r"\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\POWERPNT.EXE"
+        code, out = run(["powershell", "-NoProfile", "-Command",
+                         "(Get-ItemProperty '%s' -ErrorAction SilentlyContinue).'(default)'" % key],
+                        timeout=60)
+        if code == 0 and out.strip():
+            return out.strip()
+    return None
 
 
 def find_soffice():
@@ -71,36 +109,43 @@ def check_module(name, label):
     code, out = run([VENV_PY, "-c", f"import {name};print(getattr({name},'__version__','?'))"])
     if code != 0:
         return False, "未安装", ""
-    return True, "", out.strip().splitlines()[-1] if out.strip() else "?"
+    # 宿主环境可能往 stderr 塞告警（本机就有一条 sitecustomize 的 PermissionError），
+    # 直接取最后一行会把告警当版本号。只认以数字开头的那行。
+    lines = [ln.strip() for ln in out.splitlines() if ln.strip()]
+    vers = [ln for ln in lines if ln[0].isdigit()]
+    return True, "", vers[-1] if vers else (lines[-1] if lines else "?")
+
+
+def check_powerpoint():
+    """首选渲染器单独判：装没装是事实，不问 COM 能不能调通。"""
+    path = find_powerpoint()
+    if path:
+        return True, "", path
+    return False, "未检测到。先装 PowerPoint，再运行 setup.bat 复检", ""
 
 
 def check_renderer():
-    """几何检查要靠一个渲染器把 pptx 转 PDF。三选一，不要求装哪一个。
+    """几何检查要靠一个渲染器把 pptx 转 PDF。
 
-    顺序与 deck_lint.to_pdf 一致：PowerPoint > LibreOffice > WPS。
-
-    全部靠运行时探测，不假设任何一种存在：别人的机器上可能只装了 LibreOffice，
-    也可能三种都没有。三种都没有时返回 False，由 main 判「不能出稿」。
+    PowerPoint 是首选，单列判定；LibreOffice 与 WPS 只作兜底，
+    三者全无才算「不能出稿」。兜底渲染器的版式可能与 PowerPoint 有差异，
+    所以缺 PowerPoint 时即使能出稿，也要在结论里点名提示安装。
     """
     if not os.path.exists(VENV_PY):
         return False, "先跑 setup.bat", ""
-    found, failed = [], []
-    for key, label in (("PowerPoint.Application", "PowerPoint"),
-                       ("Kwpp.Application", "WPS")):
+    found = []
+    for key, label in (("Kwpp.Application", "WPS"),):
         code, out = run([VENV_PY, "-c",
                          "import comtypes.client as c;app=c.CreateObject('%s');"
                          "print(app.Version);app.Quit()" % key], timeout=120)
         if code == 0 and out.strip():
             found.append(label)
-        else:
-            failed.append(label)
-    soffice = find_soffice()
-    if soffice:
-        found.insert(1 if "PowerPoint" in found else 0, "LibreOffice")
+    if find_soffice():
+        found.insert(0, "LibreOffice")
 
     if not found:
         return False, "三种渲染器都不可用，几何检查跑不了", ""
-    return True, "", " / ".join(found) + ("（首选 " + found[0] + "）" if found else "")
+    return True, "", "兜底可用：" + " / ".join(found)
 
 
 def check_font():
@@ -154,8 +199,10 @@ def main() -> int:
     for mod, label in (("pptx", "python-pptx"), ("pymupdf", "PyMuPDF（几何检查）")):
         ok_, msg_, ver = check_module(mod, label)
         rows.append(("必需", label, ok_, msg_, ver))
+    pw_ok, pw_msg, pw_ver = check_powerpoint()
+    rows.append(("告警", "Microsoft PowerPoint", pw_ok, pw_msg, pw_ver))
     rd_ok, rd_msg, rd_ver = check_renderer()
-    rows.append(("必需", "PDF 渲染器（三选一）", rd_ok, rd_msg, rd_ver))
+    rows.append(("必需", "PDF 渲染器兜底", rd_ok, rd_msg, rd_ver))
     ft_ok, ft_msg, ft_ver = check_font()
     rows.append(("告警", f"字体 {FONT}", ft_ok, ft_msg, ft_ver))
     pp_ok, pp_msg, pp_ver = check_png_export()
@@ -179,7 +226,7 @@ def main() -> int:
                 mark, tail = "[XX]  ", msg
             else:
                 mark, tail = "[--]  ", msg
-            echo(f"  {mark}{level}  {name:<24}{tail}")
+            echo(f"  {mark}{level}  {pad(name, 26)}{tail}")
 
         blocking = [r for r in rows if r[0] == "必需" and r[2] is not True]
         warn = [r for r in rows if r[0] == "告警" and r[2] is False]
@@ -189,15 +236,27 @@ def main() -> int:
             for _, name, _, msg, _ in blocking:
                 echo(f"        - {name}：{msg}")
             if any("渲染器" in r[1] for r in blocking):
-                echo("        装任意一个即可（推荐顺序）：")
-                echo("          1) Microsoft PowerPoint —— 最快，且与最终观感一致")
-                echo("          2) LibreOffice —— https://zh-cn.libreoffice.org/download/")
-                echo("          3) WPS Office —— 兜底，渲染细节可能与 PowerPoint 有差异")
+                echo("        兜底渲染器装任意一个即可：")
+                echo("          1) LibreOffice —— https://zh-cn.libreoffice.org/download/")
+                echo("          2) WPS Office —— 兜底，渲染细节可能与 PowerPoint 有差异")
         else:
             echo("  结论：现在可以出 PPT。")
             echo("        make-ppt.bat briefs/01-chenghai-zhaoyiming.json 输出.pptx")
         if warn:
             echo("  告警：" + "；".join(f"{r[1]}（{r[3]}）" for r in warn))
+
+        # 缺 PowerPoint 单独成段：它是首选渲染器，缺了仍能出稿，但几何检查的
+        # 基准会换成兜底引擎，版式与客户在 PowerPoint 里看到的不是同一个东西。
+        # 这段必须点名「装什么」和「装完跑哪个文件」，否则用户只知道缺，不知道怎么补。
+        if pw_ok is not True:
+            echo()
+            echo("  建议安装：Microsoft PowerPoint")
+            echo("        它是首选渲染器，几何检查的断行与行距与你在 PowerPoint 里")
+            echo("        看到的完全一致；兜底引擎能转 PDF，但基准不同，结论会偏。")
+            echo("        怎么装：")
+            echo("          1) 双击项目根目录的 setup.bat，按它的提示装 PowerPoint")
+            echo("          2) 装完再双击一次 setup.bat 复检 —— 这一行要变成 [OK]")
+            echo("          3) 之后再用 make-ppt.bat 出稿，几何检查才有可信基准")
 
     return 1 if any(r[0] == "必需" and r[2] is not True for r in rows) else 0
 

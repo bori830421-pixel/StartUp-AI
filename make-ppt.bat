@@ -90,8 +90,9 @@ if "%LINT%"=="0" (
 ) else (
     echo ============================================================
     echo   文件已生成，但检查工具没跑起来（退出码 %LINT%）。
-    echo   三种渲染器（PowerPoint / LibreOffice / WPS）都不可用，或缺 PyMuPDF。
-echo   跑 python tools\doctor.py 看原因。
+    echo   首选渲染器 Microsoft PowerPoint 不可用，兜底也没跑通。
+    echo   先装 PowerPoint，再双击 setup.bat 复检；具体原因看：
+    echo     python tools\doctor.py
     echo ============================================================
 )
 echo.

@@ -31,23 +31,25 @@
 python tools/doctor.py        # 逐项列出必需/告警，结论直说能不能出稿
 ```
 
-必需项缺一个就不能出：Python、python-pptx、PyMuPDF、**PDF 渲染器（三选一）**。字体只告警，不影响出稿。
+必需项缺一个就不能出：Python、python-pptx、PyMuPDF、**PDF 渲染器兜底（LibreOffice / WPS 任选其一）**。字体只告警，不影响出稿。
 
-### PDF 渲染器：三选一
+### 渲染器：PowerPoint 首选，另外两个兜底
 
-几何检查需要把 pptx 转成 PDF 才能读到真实断行。**不要求必须装 LibreOffice**，下面三种任有其一即可，按这个优先级自动选择。
+几何检查要把 pptx 转成 PDF 才能读到真实断行。**PowerPoint 是首选**——它渲染出来的断行与行距，就是客户双击文件时看到的那一个；LibreOffice 与 WPS 只是「让几何检查跑得起来」的兜底，基准不同，结论会偏。
 
-耗时一栏是在一台 Windows 机器上的参考值，**换个环境会差很多**（机械硬盘、杀毒软件、Office 版本都会影响）。用它的理由不是绝对速度，而是「PowerPoint 渲染的版式就是用户在 PowerPoint 里看到的那个」：
+所以 `doctor.py` 把 PowerPoint 单列一行，装没装按事实判，不靠 COM 能不能调通：WPS 会注册同名 ProgID `PowerPoint.Application`，`Name` 还自称 "Microsoft PowerPoint"，只有 `Path` 指向 `...\Kingsoft\WPS Office\...` 才露馅（本机实测如此）。只探 COM 会把 WPS 当成 PowerPoint，于是永远不提示安装。**没装时结论区单独给一段安装指引，明确让用户装完重跑 `setup.bat`。**
+
+耗时一栏是在一台 Windows 机器上的参考值，**换个环境会差很多**（机械硬盘、杀毒软件、Office 版本都会影响）：
 
 | 顺序 | 渲染器 | 参考耗时 | 说明 |
 | --- | --- | --- | --- |
-| 1 | **PowerPoint**（COM） | 约 2s | 与用户在 PowerPoint 里看到的完全一致，所以排第一 |
-| 2 | **LibreOffice** | 冷启动较慢（数十秒量级） | 免安装生态最广，但明显慢于前两者 |
-| 3 | **WPS**（COM） | 约 2s | 兜底。兼容 COM 接口，但渲染细节与真实 PowerPoint 差异最大，所以排最后 |
+| 1 | **PowerPoint**（COM） | 约 2s | 首选。与客户在 PowerPoint 里看到的完全一致 |
+| 2 | **LibreOffice** | 冷启动较慢（数十秒量级） | 兜底，免安装生态最广 |
+| 3 | **WPS**（COM） | 约 2s | 兜底。兼容 COM 接口，但渲染细节与真实 PowerPoint 差异最大 |
 
 一台 Windows 机器上的实测稳定态（已预热，11 页）：PowerPoint 4–5 秒、WPS 3.8 秒、LibreOffice 47 秒。首次运行会明显更慢——PowerPoint 的 COM 冷启动尤其如此，别拿第一次的耗时当基准。
 
-**三种都没有时，出稿照常，但几何检查跳过。** 这不是错误配置，是环境差异——`doctor.py` 会把这个情况标成必需项缺失并给出安装指引，是否安装由用户决定。
+兜底两个也都没有时，出稿照常，但几何检查跑不了。这不是错误配置，是环境差异——`doctor.py` 把这个情况标成必需项缺失并给出安装指引，是否安装由用户决定。
 
 用 `--engine` 可强制指定：
 
@@ -55,7 +57,7 @@ python tools/doctor.py        # 逐项列出必需/告警，结论直说能不�
 python tools/deck_lint.py 输出.pptx --engine PowerPoint
 ```
 
-每次运行会在第一行回显实际用了哪个渲染器。
+每次运行会在第一行回显实际用了哪个渲染器；没用上 PowerPoint 时多打一行提示，让用户装完重跑 `setup.bat`。
 
 > **换引擎等于换基准。** 三种引擎的行高舍入不同，同一份稿子的 `[提示]` 项可能相差 ±1pt（例如「贴底色块下边 -1pt」在 LibreOffice 下报、在 PowerPoint 下不报）。`[必改]` 项在三种引擎下结论一致——那才是卡交付的条件。
 
@@ -115,7 +117,7 @@ python deck_lint.py 输出.pptx --png out/  # 顺手导出逐页图，供人工�
 
 `--tol` 调越界容差（默认 5pt）。退出码 `0` 干净 / `1` 有必改项，可以串进脚本。
 
-依赖一个 PDF 渲染器（PowerPoint / LibreOffice / WPS 任选其一，自动选择）转 PDF，一种都没有会直接报错，不会假装通过。
+依赖一个 PDF 渲染器转 PDF（PowerPoint 优先，LibreOffice / WPS 兜底），一种都没有会直接报错，不会假装通过。
 
 ## 文件
 
@@ -133,7 +135,7 @@ python deck_lint.py 输出.pptx --png out/  # 顺手导出逐页图，供人工�
 | `mcp_server.py` | MCP 服务端（stdio JSON-RPC，纯标准库不装 SDK）：5 个只读工具 + 全量 resources + `checkup` prompt；阈值全读 `data/params.json`，工具里不含判断。`--selftest` 断言，`--list` 看暴露面 | 300 |
 | `mcp_tools.py` | MCP 的工具层：五个只读工具与 `TOOLS` 表。只算数不下判断；拆出来是为了守住单文件 400 行上限 | 300 |
 | `bootstrap.py` | 部署：建 `.venv`、离线装 wheel、冒烟测试 | 300 |
-| `doctor.py` | 环境体检：必需/告警分级，缺全部渲染器才判不能出稿 | 300 |
+| `doctor.py` | 环境体检：必需/告警分级；PowerPoint 单列一行，缺了给安装指引并让用户重跑 setup.bat；兜底渲染器全无才判不能出稿 | 300 |
 | `requirements.txt` | 固定版本清单，给想联网装同一套的人用 | — |
 | `wheels/*.whl` | 离线依赖源，7 个文件 27.2 MB，入库 | — |
 | `briefs/*.json` | 内容。新增一份就是一个新演示文稿 | — |
@@ -155,13 +157,14 @@ python tools/doc_check.py --verbose    # 附带体积排行
 | --- | --- | --- |
 | `.bat` 存成 UTF-8 无 BOM | cmd.exe 按系统 ANSI 码页（中文 Windows 是 936）解析，把 `set PYTHONIOENCODING` 吃掉首字母，报 `'ONIOENCODING' is not recognized` | 存成 **UTF-8 with BOM**，并在开头 `chcp 65001` |
 | 用 `errorlevel` 判断 `py -3.12` 是否存在 | 版本不存在时 `py` 只往 stderr 报错、**退出码仍是 0**，导致误选到下一个版本 | 用 `for /f` 捕获它打印的版本号，只有打出来的值等于请求版本才算找到 |
+| 冒烟测试把临时 PPTX 写进系统 `%TEMP%` 时遭到 Windows 权限拒绝 | 依赖安装成功，但生成 PPTX 的子进程在系统临时目录写入失败 | 冒烟文件放在本项目 `.venv` 下的临时目录；部署刚创建并验证过该目录 |
 | `setup.bat` 在脚本或后台里跑会「卡住」 | 长时间没有任何输出，看起来像装到一半死了。实际部署 17 秒就完成，卡住的是结尾那行 `pause`——它等键盘输入，非交互环境永远等不到 | 非交互调用时把标准输入接空：`cmd /c setup.bat < /dev/null`（Windows 原生可写 `echo.| setup.bat`）。双击运行不受影响，`pause` 是留给人看结果的 |
 
 这条依赖机器上装了什么，**不保证任何环境都有**：
 
 | 依赖 | 缺了会怎样 | 怎么处理 |
 | --- | --- | --- |
-| PowerPoint / WPS / LibreOffice | 几何检查转不了 PDF | 三者任选其一（见「装」一节的渲染器表），`doctor.py` 会告警 |
+| PowerPoint / WPS / LibreOffice | 几何检查转不了 PDF（缺 PowerPoint 只降基准，另两个全无才转不了） | PowerPoint 首选，缺了 `doctor.py` 会提示装完重跑 `setup.bat`；兜底见「装」一节的渲染器表 |
 | 微软雅黑字体 | 用替代字体，版式可能偏移 | 只告警，不拦出稿 |
 | comtypes | `--png` 导图不可用 | 已随 wheels 安装，正常都有 |
 

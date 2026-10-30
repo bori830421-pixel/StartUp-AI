@@ -85,6 +85,9 @@ echo   [4/4] 部署完成，现在可以出 PPT 了。
 echo.
 echo   出稿：make-ppt.bat tools\briefs\01-chenghai-zhaoyiming.json 输出.pptx
 echo   用例：make-ppt.bat --list
+echo.
+echo   注意：上面若提示「未检测到 Microsoft PowerPoint」，先装 PowerPoint，
+echo         再双击本文件重跑一次体检。它是几何检查的首选渲染器。
 echo ============================================================
 echo.
 pause

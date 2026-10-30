@@ -135,7 +135,9 @@ def smoke() -> bool:
     step("冒烟测试：渲染一份 3 页 pptx")
     import json
     import tempfile
-    tmpdir = tempfile.mkdtemp(prefix="startupai-smoke-")
+    # Windows 安全策略可能禁止子进程在系统 TEMP 下写入 PPTX。部署刚
+    # 创建/验证过项目内的 .venv，因此把冒烟文件放在该可写目录里。
+    tmpdir = tempfile.mkdtemp(prefix="startupai-smoke-", dir=VENV)
     try:
         src = os.path.join(tmpdir, "smoke.json")
         out = os.path.join(tmpdir, "smoke.pptx")
