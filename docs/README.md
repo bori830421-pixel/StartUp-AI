@@ -11,7 +11,7 @@
 | [architecture-map.md](./architecture-map.md) | 产品目的、主流程、能力模块、数据边界、文件边界 | 现行 |
 | [capability-index.md](./capability-index.md) | 能力清单、成熟度状态、对应样例、条目编写约定 | 现行 |
 | [verification-guide.md](./verification-guide.md) | 验收场景、交付前检查、闸门退化形态、文档变更验证方式 | 现行 |
-| [decisions/](./decisions/) | 决策记录，一主题一文件，编号连续 | 18 份 |
+| [decisions/](./decisions/) | 决策记录，一主题一文件，编号连续 | 19 份 |
 
 ## 决策记录
 
@@ -33,10 +33,11 @@
 | [0012](./decisions/0012-industry-taxonomy.md) | 行业分类：以国标门类为骨架，不为行业建原型 | 已采纳 |
 | [0013](./decisions/0013-skill-distribution.md) | 分发形态：仓库不是安装单元，产物在 `dist/startup-guide/` | 已采纳 |
 | [0014](./decisions/0014-mcp-boundary.md) | MCP 边界：只包确定性计算，暴露 resources 让无文件系统的宿主也能读全文 | 已采纳 |
-| [0015](./decisions/0015-search-fallback-in-flat.md) | 检索兜底进单文件：先判「没工具」，再判「没网」 | 已采纳（补齐 0008 的入口） |
+| [0015](./decisions/0015-search-fallback-in-flat.md) | 检索兜底进单文件：先判「没工具」，再判「没网」 | 已采纳（体积口径由 0019 修订） |
 | [0016](./decisions/0016-endpoint-pools.md) | 端点不排顺序：国内 / 境外两份候选池，基线定判据，由智能体现场判断 | 已采纳（修订 0015 的固定顺序） |
 | [0017](./decisions/0017-doc-size-cap.md) | 文档硬上限 24 KB → 32 KB：阈值从「防过大」退化成「逼拆分」 | 已采纳（修订 0005 的体积一项） |
 | [0018](./decisions/0018-pdf-check-optional.md) | PDF 几何检查降为可选层：验证手段不是交付前提 | 已采纳（修订 0010 的依赖口径） |
+| [0019](./decisions/0019-flat-payload-budget.md) | 单文件体积由脚本现算，载荷只收运行时指令 | 已采纳（修订 0015 的体积口径） |
 
 ## 新增约定
 

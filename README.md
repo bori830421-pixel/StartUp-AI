@@ -34,7 +34,7 @@
 可安装：仓库不是安装单元，`dist/startup-guide/` 才是。它已入库，克隆即可用，不必先装 Python；改了源文件才需要重建。
 
 ```bash
-python tools/build_skill.py     # 重建 dist/startup-guide/（78 个文件，约 544 KB）
+python tools/build_skill.py     # 重建 dist/startup-guide/（78 个文件，体积以脚本输出为准）
 python tools/build_flat.py      # 重建单文件形态 dist/startup-guide.flat.txt
 python tools/skill_check.py     # 校验规范、体积、死链、阈值一致性与产物是否过期
 ```
@@ -47,7 +47,7 @@ python tools/skill_check.py     # 校验规范、体积、死链、阈值一致�
 | --- | --- | --- |
 | 目录技能 | 装到 `~/.workbuddy/skills/` 后 `skill_check.py --path` 通过（规范、死链、阈值一致性在异地成立）；`install` 用例用真实输出跑过冒烟并判定通过 | 未在 WorkBuddy 之外的宿主实装 |
 | MCP | 2026-10-30 在 WorkBuddy 客户端通过：5 个工具出现在列表，`capital_band(5000)` 返回 B2，`initialize` 回 `protocolVersion=2024-11-05` | 换客户端需重跑（Claude Desktop / Cursor 未验） |
-| 单文件 | 2026-10-30 在 DeepSeek 桌面端通过 `install` 三条判据；token 首次测得约 12,600（8k 宿主装不下，32k 占 38.5%） | 断网分支漏了 A/B 两条路；8k 上下文宿主未验 |
+| 单文件 | 2026-10-30 在 DeepSeek 桌面端通过 `install` 三条判据；体积约 17,200 token，32k 宿主占 53% | 断网分支漏了 A/B 两条路；**8k 宿主不支持**（规则本身就这么长，压到 8k 只能删规则） |
 
 冒烟用例 09 / 12 / 16 已于 2026-10-30 用真实输出跑过，三条全部通过。但**只验形态**：实测一份编造客单价与转化率、并把 H1 判成「信息不足」却给出完整三十天计划的输出，同样能通过判据。内容合格与否仍须按各样例的「自检」小节人工对照，判据抓不到编造参数与假闸门。
 

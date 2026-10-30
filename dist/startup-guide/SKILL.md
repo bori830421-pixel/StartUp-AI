@@ -233,6 +233,7 @@ P3 收定金前必须给需求确认单，把范围、交付日与加项价目�
 - 首次读取本项目源码时，告知用户：普通 PPTX 只需基础 Python 环境；PDF 转换与几何检查的配置比较繁琐，默认建议不要安装，只有用户明确需要时才启用。
 - 用户要 PPT/PDF 时按 `references/deck-spec.md` 走：先定页序与每页结论句，再渲染。在源码仓库中先跑 `tools/doctor.py`；缺基础依赖时给出项目根目录 `setup.bat` 的实际绝对路径，请用户运行后再复检。若宿主只有安装后的技能目录、没有这些脚本，不要编造路径，按宿主环境给安装说明或降级为可粘贴文案。默认只生成 PPTX；缺依赖时先告知。PDF 转换/几何检查仅按需启用：`setup.bat --with-pdf-check` 后运行 `tools/doctor.py --pdf`；PowerPoint、LibreOffice、WPS 需用户另行安装，不得当作出 PPTX 的前提。交付前核对数字、假设、来源、日期及前后结论是否一致。
 
+<!-- flat:skip -->
 ## 详细索引
 
 入口只列到目录一级，目录内的文件清单看各自的 `README.md`。本文件已接近建议上限，新增流程细节一律进 `references/`，这里只留摘要加链接。
@@ -242,3 +243,4 @@ P3 收定金前必须给需求确认单，把范围、交付日与加项价目�
 - [分宿主接入](./hosts/README.md)：目录技能 / MCP / 纯文本三形态的落点与各自的坑；不确定用哪种就不看，按 `INSTALL.md` 第 2 节的表判定
 - [行为样例索引](./examples/README.md)、[数据层索引](./data/README.md)：数据分级、原型库、行业卡（检索缓存）
 - 版式引擎：`tools/deck_engine.py`，只在用户要文件时用；页序与降级规则见 `references/deck-spec.md` 第 6 节。
+<!-- flat:skip-end -->

@@ -20,6 +20,11 @@
 - 产物放在 dist/ 顶层、不在 dist/startup-guide/ 内，与 skill_check.py
   的校验范围（目录技能）互不重叠；本工具自带 --check 拦过期。
 
+体积口径（决策 0019）：token 占用由本工具算出并打印，不写死在文档里。
+手写数字必漂——0015 估的是 15,300，实际已到 18,000 量级，而文档一直停在
+12,600。估算按汉字 1 token、非汉字 4 字符/token，用唯一一次真实测量
+（17,857 字符 ≈ 12,600 token）校准过。
+
 用法：
     python tools/build_flat.py            # 生成；SKILL.md 或 references/ 改动后重跑
     python tools/build_flat.py --check    # 只校验是否最新，0 最新 / 1 过期或缺失
@@ -50,10 +55,44 @@ HEADER = """# 创业指南技能 · 单文件版（B 形态）
 > 检索声明（分档，按顺序判）：① 会话里有可用搜索工具 → 直接用；② 搜索工具存在但报凭据错误（缺 API key、401、未配置）→ 先按「检索兜底」用公开端点查，最多 3 个端点，每个只试一条；③ 连外部网址都打不开、或公开端点全失败 → 按「断网降级」先告知再降级，结论封顶在「信息不足」，不判放行也不判不建议启动，并在提示里写明试过哪些端点、各报什么错。
 > 降级不等于放弃：断网或全端点失败时，结论封顶在「信息不足」——不判放行也不判不建议启动；不把行业卡当查过，不把推演当核实。
 > 与目录形态（A，dist/startup-guide/）同源但能力弱：未收录的 references（运行时检索、检索串模板等）按问题临时补进对话。
+> 本文件只收运行时指令。维护者的实测记录、文档导航这类内容不进载荷——它们不改变模型该怎么做，只占上下文。
 
 以下依次收录：SKILL.md（主流程与硬约束）、intake-questions（怎么问）、
 pattern-fork（模式分叉）、checkup-scorecard（怎么算）、search-fallback（检索兜底）、
 offline-degradation（断网降级）。"""
+
+# 源文件里用这两行圈出「只给维护者看、运行时用不上」的段落。
+# 用标记而不是在 build 里写行号：行号会随源文件改动错位，标记不会，
+# 而且标记本身说明了为什么这段不进载荷。
+SKIP_OPEN = "<!-- flat:skip -->"
+SKIP_CLOSE = "<!-- flat:skip-end -->"
+
+
+def estimate_tokens(text: str) -> int:
+    """粗估 token：汉字 1 个算 1，其余 4 字符算 1。
+
+    用唯一一次真实测量校准过——旧版 17,857 字符实测约 12,600 token，
+    该文件的汉字占比与本文件接近，两种算法差在 5% 以内。它不是精确值，
+    但足以判断「装不装得下」，而这正是唯一要回答的问题。
+    """
+    cjk = sum(1 for ch in text if "\u4e00" <= ch <= "\u9fff")
+    return int(cjk + (len(text) - cjk) / 4)
+
+
+def strip_skipped(text: str, rel: str) -> str:
+    """去掉被 <!-- flat:skip --> 圈住的段落，保留其余内容原样。"""
+    out, pos = [], 0
+    while True:
+        start = text.find(SKIP_OPEN, pos)
+        if start < 0:
+            out.append(text[pos:])
+            return "".join(out)
+        end = text.find(SKIP_CLOSE, start)
+        if end < 0:
+            # 标记不闭合是源文件的错，不能静默截断到文件尾
+            raise ValueError(f"{rel}：{SKIP_OPEN} 没有配对的 {SKIP_CLOSE}")
+        out.append(text[pos:start])
+        pos = end + len(SKIP_CLOSE)
 
 
 def strip_frontmatter(text: str) -> str:
@@ -71,6 +110,7 @@ def build() -> str:
         text = (REPO / rel).read_text(encoding="utf-8")
         if strip:
             text = strip_frontmatter(text)
+        text = strip_skipped(text, rel)
         parts.append(f"========== 收录：{rel}（{label}）==========\n\n{text.rstrip()}")
     return "\n\n".join(parts) + "\n"
 
@@ -102,8 +142,12 @@ def main() -> int:
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(fresh, encoding="utf-8")
+    tokens = estimate_tokens(fresh)
     print(f"已生成 {OUT.relative_to(REPO)}：{len(fresh.splitlines())} 行，"
-          f"{OUT.stat().st_size / 1024:.1f} KB")
+          f"{OUT.stat().st_size / 1024:.1f} KB，约 {tokens:,} token")
+    for ctx in (8192, 32768, 131072):
+        print(f"  {ctx // 1024}k 宿主：{tokens / ctx * 100:.0f}%"
+              + ("（装不下）" if tokens > ctx else ""))
     print("下一步：python tools/build_flat.py --check（源文件改动后重跑生成）")
     return 0
 
