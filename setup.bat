@@ -42,7 +42,7 @@ for %%V in (3.12 3.11 3.13 3.10 3.9) do (
 
 REM 没有 py 启动器时退回 PATH 里的 python
 if not defined PYEXE (
-    for /f "delims=" %%O in ('python -c "import sys;print('%%d.%%d'%%sys.version_info[:2])" 2^>nul') do (
+    for /f "delims=" %%O in ('python -c "import sys;assert sys.version_info >= (3,9);print('%%d.%%d'%%sys.version_info[:2])" 2^>nul') do (
         set "PYEXE=python"
         echo   [OK] python %%O
     )

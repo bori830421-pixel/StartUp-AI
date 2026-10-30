@@ -13,6 +13,7 @@
 """
 import argparse
 import os
+import shlex
 import shutil
 import subprocess
 import sys
@@ -52,7 +53,7 @@ def sub(cmd, **kw):
         return 1, str(exc)
 
 
-def ensure_venv(python_exe: str) -> bool:
+def ensure_venv(python_cmd: list[str]) -> bool:
     step("创建虚拟环境 .venv")
     if os.path.exists(VENV_PY):
         code, out = sub([VENV_PY, "-c", "import sys;print(sys.version_info[:3])"])
@@ -62,7 +63,7 @@ def ensure_venv(python_exe: str) -> bool:
         echo("  已有 .venv 但不可用，重建")
         shutil.rmtree(VENV, ignore_errors=True)
 
-    code, out = sub([python_exe, "-m", "venv", VENV])
+    code, out = sub([*python_cmd, "-m", "venv", VENV])
     if code != 0 or not os.path.exists(VENV_PY):
         fail("建 venv 失败：\n" + out.strip()[-800:])
         return False
@@ -164,22 +165,26 @@ def main() -> int:
             pass
 
     ap = argparse.ArgumentParser(description="StartUp-AI 一键部署")
-    ap.add_argument("--python", default=sys.executable, help="用于创建 venv 的解释器")
+    ap.add_argument("--python", default=sys.executable, help="用于创建 venv 的解释器路径或启动器命令")
     ap.add_argument("--check", action="store_true", help="只检查现状，不安装")
     args = ap.parse_args()
+    python_cmd = [args.python] if os.path.isfile(args.python) else shlex.split(args.python)
+    if not python_cmd:
+        echo("  [FAIL] 基础解释器命令为空")
+        return 1
 
     echo("=" * 56)
     echo("  StartUp-AI 版式引擎部署")
     echo("=" * 56)
     echo(f"  项目目录 : {ROOT}")
-    echo(f"  基础解释器: {args.python}")
+    echo(f"  基础解释器: {' '.join(python_cmd)}")
 
     if args.check:
         for path, label in ((VENV_PY, ".venv"), (WHEELS, "tools/wheels")):
             echo(f"  {label:<14}{'存在' if os.path.exists(path) else '缺失'}")
         return 0
 
-    if not ensure_venv(args.python):
+    if not ensure_venv(python_cmd):
         return 1
     if not install():
         return 1

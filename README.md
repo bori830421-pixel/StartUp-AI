@@ -41,15 +41,16 @@ python tools/skill_check.py     # 校验规范、体积、死链、阈值一致�
 
 三种形态都已支持：目录技能（首选）、单文件注入（只有对话框的宿主）、MCP（`tools/mcp_server.py`，零依赖）。装法与验证见 [INSTALL.md](./INSTALL.md)，各形态细节见 [hosts/](./hosts/README.md)。
 
-**还没验证的三件事。** 已实现不等于已验证，这三条是目前明确没做到的：
+**还没验证的两件事。** 已实现不等于已验证，这两条是目前明确没做到的：
 
 | 缺口 | 现在做到哪 | 怎么补 |
 | --- | --- | --- |
 | MCP 在真实客户端联调 | 管道级协议测试全通（`initialize` / `tools/list` / `tools/call` / `resources/list` / `prompts/get`），`--selftest` 15 项断言，装到安装位置后从任意目录复跑通过 | 按 `hosts/mcp.md` 配一次，工具列表出现且 `capital_band` 返回 B 档 |
 | 单文件形态在纯文本宿主实跑 | `build_flat.py --check` 保证与源逐字节一致；实际 41 KB / 781 行的 token 开销没测过 | 全文贴进网页版对话，跑 `INSTALL.md` 第 3 节那句验证 |
-| 09 / 12 / 16 三个冒烟用例 | 只有 `install` 用例用真实输出跑过；另三个仅内置正样本 | `python tools/skill_smoke.py --input 09 12 16`，回复存文件后 `--check` |
 
-这三条都不阻塞安装：`dist/startup-guide/` 已在仓库里，克隆即可用。逐条判据与不合格时的处理顺序见 [验证指南](./docs/verification-guide.md) 的「接入形态的验证缺口」。
+冒烟用例 09 / 12 / 16 已于 2026-10-30 用真实输出跑过，三条全部通过。但**只验形态**：实测一份编造客单价与转化率、并把 H1 判成「信息不足」却给出完整三十天计划的输出，同样能通过判据。内容合格与否仍须按各样例的「自检」小节人工对照，判据抓不到编造参数与假闸门。
+
+这两条都不阻塞安装：`dist/startup-guide/` 已在仓库里，克隆即可用。逐条判据与不合格时的处理顺序见 [验证指南](./docs/verification-guide.md) 的「接入形态的验证缺口」。
 
 ## 目录
 

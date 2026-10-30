@@ -153,6 +153,7 @@ python tools/doc_check.py --verbose    # 附带体积排行
 | --- | --- | --- |
 | `.bat` 存成 UTF-8 无 BOM | cmd.exe 按系统 ANSI 码页（中文 Windows 是 936）解析，把 `set PYTHONIOENCODING` 吃掉首字母，报 `'ONIOENCODING' is not recognized` | 存成 **UTF-8 with BOM**，并在开头 `chcp 65001` |
 | 用 `errorlevel` 判断 `py -3.12` 是否存在 | 版本不存在时 `py` 只往 stderr 报错、**退出码仍是 0**，导致误选到下一个版本 | 用 `for /f` 捕获它打印的版本号，只有打出来的值等于请求版本才算找到 |
+| 首次部署卡在渲染器 | `setup.bat` 长时间没有输出（实测一次卡了 15 分钟）；首次运行 PowerPoint（Office 2007 一类老版本）冷启动慢，超时后自动降级到 LibreOffice，而 LibreOffice 首次运行要建配置档案，可能再卡十几分钟 | 让它跑完首次冷启动；预热后复跑一次，回显应为 `渲染器：PowerPoint`。稳定态实测：PowerPoint 约 4–5 秒（11 页），LibreOffice 约 47 秒，WPS 约 4 秒。急用可 `--engine WPS` 或 `--engine PowerPoint` 强制指定 |
 
 这条依赖机器上装了什么，**不保证任何环境都有**：
 
