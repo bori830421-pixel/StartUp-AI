@@ -3,8 +3,14 @@
 """把技能压成单文件形态 dist/startup-guide.flat.txt（B 形态）。
 
 给只能接受一段文本的宿主（网页版对话、API 单轮）当系统提示，
-对应 INSTALL.md 第 2 节 B 形态。收录清单固定为 SKILL.md 加四份
-关键 references：怎么问、模式分叉、怎么算、断网降级。
+对应 INSTALL.md 第 2 节 B 形态。收录清单固定为 SKILL.md 加五份
+关键 references：怎么问、模式分叉、怎么算、检索兜底、断网降级。
+
+两条与「检索」相关的收录理由（决策记录 0015）：
+- search-fallback 必须在 offline-degradation 之前收：两类「搜不了」的
+  判断入口都在它那里，放前面，模型才会先判「没工具」再判「没网」。
+- 头部不再写平级的降级声明：写了「无联网即封顶」，遇到缺密钥的宿主
+  会直接跳过兜底，把本可救的问题退回给用户。
 
 三条设计事实：
 - 机械拼接，不做编辑式删改：产物必须能被 --check 逐字节复验。
@@ -33,6 +39,7 @@ PARTS = (
     ("references/intake-questions.md", "怎么问：8 道引导题", False),
     ("references/pattern-fork.md", "模式分叉：先定用哪套成本算", False),
     ("references/checkup-scorecard.md", "怎么算：七维体检评分口径", False),
+    ("references/search-fallback.md", "检索兜底：有网没工具时怎么查", False),
     ("references/offline-degradation.md", "断网降级：先告知再降级", False),
 )
 
@@ -40,11 +47,13 @@ HEADER = """# 创业指南技能 · 单文件版（B 形态）
 
 > 本文件由 tools/build_flat.py 生成，不要手改；源文件改动后重新生成，--check 会拦下过期产物。
 > 用途：给只能接受一段文本的宿主（网页版对话、API 单轮）。把本文件全文作为系统提示，即可执行完整体检流程。
-> 降级声明：当前环境没有联网工具时，结论封顶在「信息不足」——不判放行也不判不建议启动；不把行业卡当查过，不把推演当核实。
+> 检索声明（分档，按顺序判）：① 会话里有可用搜索工具 → 直接用；② 搜索工具存在但报凭据错误（缺 API key、401、未配置）→ 先按「检索兜底」用公开端点查，最多 3 个端点，每个只试一条；③ 连外部网址都打不开、或公开端点全失败 → 按「断网降级」先告知再降级，结论封顶在「信息不足」，不判放行也不判不建议启动，并在提示里写明试过哪些端点、各报什么错。
+> 降级不等于放弃：断网或全端点失败时，结论封顶在「信息不足」——不判放行也不判不建议启动；不把行业卡当查过，不把推演当核实。
 > 与目录形态（A，dist/startup-guide/）同源但能力弱：未收录的 references（运行时检索、检索串模板等）按问题临时补进对话。
 
 以下依次收录：SKILL.md（主流程与硬约束）、intake-questions（怎么问）、
-pattern-fork（模式分叉）、checkup-scorecard（怎么算）、offline-degradation（断网降级）。"""
+pattern-fork（模式分叉）、checkup-scorecard（怎么算）、search-fallback（检索兜底）、
+offline-degradation（断网降级）。"""
 
 
 def strip_frontmatter(text: str) -> str:

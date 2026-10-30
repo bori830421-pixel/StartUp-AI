@@ -29,12 +29,12 @@
 
 ## 当前状态
 
-规则与接入框架阶段。已有规则、能力边界、28 个验收场景、22 个行为样例，以及三种可安装形态（目录技能 / 单文件 / MCP）。除 `tools/` 下的版式引擎、构建校验与 MCP 服务端外，没有数据库、后端或外部服务集成。
+规则与接入框架阶段。已有规则、能力边界、35 个验收场景、24 个行为样例，以及三种可安装形态（目录技能 / 单文件 / MCP）。除 `tools/` 下的版式引擎、构建校验与 MCP 服务端外，没有数据库、后端或外部服务集成。
 
 可安装：仓库不是安装单元，`dist/startup-guide/` 才是。它已入库，克隆即可用，不必先装 Python；改了源文件才需要重建。
 
 ```bash
-python tools/build_skill.py     # 重建 dist/startup-guide/（73 个文件，约 484 KB）
+python tools/build_skill.py     # 重建 dist/startup-guide/（75 个文件，约 504 KB）
 python tools/build_flat.py      # 重建单文件形态 dist/startup-guide.flat.txt
 python tools/skill_check.py     # 校验规范、体积、死链、阈值一致性与产物是否过期
 ```
@@ -45,6 +45,7 @@ python tools/skill_check.py     # 校验规范、体积、死链、阈值一致�
 
 | 形态 | 实测结果 | 残余缺口 |
 | --- | --- | --- |
+| 目录技能 | 装到 `~/.workbuddy/skills/` 后 `skill_check.py --path` 通过（规范、死链、阈值一致性在异地成立）；`install` 用例用真实输出跑过冒烟并判定通过 | 未在 WorkBuddy 之外的宿主实装 |
 | MCP | 2026-10-30 在 WorkBuddy 客户端通过：5 个工具出现在列表，`capital_band(5000)` 返回 B2，`initialize` 回 `protocolVersion=2024-11-05` | 换客户端需重跑（Claude Desktop / Cursor 未验） |
 | 单文件 | 2026-10-30 在 DeepSeek 桌面端通过 `install` 三条判据；token 首次测得约 12,600（8k 宿主装不下，32k 占 38.5%） | 断网分支漏了 A/B 两条路；8k 上下文宿主未验 |
 

@@ -14,7 +14,7 @@
 | 判定 | 形态 | 动作 |
 | --- | --- | --- |
 | 存在 `~/.workbuddy/skills/`、`.agents/skills/` 或 `.claude/skills/` | A 目录技能（推荐） | 把 `dist/startup-guide/` 整个复制进该目录 |
-| 只能接受一段文本（网页版对话、API 单轮） | B 单文件 | 把 `dist/startup-guide.flat.txt` 全文作为系统提示：SKILL.md 加 4 份关键 references 的合并单文件，由 `tools/build_flat.py` 生成；其余 references 按问题临时补 |
+| 只能接受一段文本（网页版对话、API 单轮） | B 单文件 | 把 `dist/startup-guide.flat.txt` 全文作为系统提示：SKILL.md 加 5 份关键 references（怎么问、模式分叉、怎么算、检索兜底、断网降级）的合并单文件，由 `tools/build_flat.py` 生成；其余 references 按问题临时补 |
 | 支持 MCP | C MCP | 配置 `{"command":"python3","args":["<绝对路径>/dist/startup-guide/tools/mcp_server.py"]}`，零依赖，不必装 SDK |
 
 三种形态的细节、落点与各自的坑见 [hosts/](./hosts/README.md)：目录形态看 [directory.md](./hosts/directory.md)，MCP 看 [mcp.md](./hosts/mcp.md)，纯文本看 [plain-prompt.md](./hosts/plain-prompt.md)。不确定就不看，上面这张表够用。

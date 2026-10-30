@@ -129,13 +129,13 @@ python deck_lint.py 输出.pptx --png out/  # 顺手导出逐页图，供人工�
 | `build_skill.py` | 构建可安装技能目录 `dist/startup-guide/`，剔除 `.venv` 与 wheels；安装清单见根目录 `INSTALL.md` | 200 |
 | `skill_check.py` | 校验安装产物：frontmatter 规范、目录名一致、体积、产物是否过期 | 250 |
 | `skill_smoke.py` | 接入冒烟验收：打印 4 个验收输入（INSTALL 第 3 节与样例 09/12/16），校验宿主输出形态并以退出码给结论；只验形态不判内容，维护者侧工具不进安装单元 | 300 |
-| `build_flat.py` | 生成 B 形态单文件 `dist/startup-guide.flat.txt`：SKILL.md 加 4 份关键 references 机械合并，给只有对话框的宿主当系统提示；`--check` 拦过期产物，`.txt` 载荷不占文档行数口径 | 150 |
+| `build_flat.py` | 生成 B 形态单文件 `dist/startup-guide.flat.txt`：SKILL.md 加 5 份关键 references（含检索兜底）机械合并，给只有对话框的宿主当系统提示；`--check` 拦过期产物，`.txt` 载荷不占文档行数口径 | 150 |
 | `mcp_server.py` | MCP 服务端（stdio JSON-RPC，纯标准库不装 SDK）：5 个只读工具 + 全量 resources + `checkup` prompt；阈值全读 `data/params.json`，工具里不含判断。`--selftest` 断言，`--list` 看暴露面 | 300 |
 | `mcp_tools.py` | MCP 的工具层：五个只读工具与 `TOOLS` 表。只算数不下判断；拆出来是为了守住单文件 400 行上限 | 300 |
 | `bootstrap.py` | 部署：建 `.venv`、离线装 wheel、冒烟测试 | 300 |
 | `doctor.py` | 环境体检：必需/告警分级，缺全部渲染器才判不能出稿 | 300 |
 | `requirements.txt` | 固定版本清单，给想联网装同一套的人用 | — |
-| `wheels/*.whl` | 离线依赖源，6 个文件 26.9 MB，入库 | — |
+| `wheels/*.whl` | 离线依赖源，7 个文件 27.2 MB，入库 | — |
 | `briefs/*.json` | 内容。新增一份就是一个新演示文稿 | — |
 
 `doc_check.py` 不依赖 `python-pptx`，只查 Markdown 与代码文件的结构，是 `AGENTS.md`「交付前自检」的指定命令：

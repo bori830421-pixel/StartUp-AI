@@ -37,7 +37,7 @@ from mcp_tools import (
 )
 
 SERVER_NAME = "startup-guide"
-SERVER_VERSION = "0.4.0"
+SERVER_VERSION = "0.5.0"
 PROTOCOLS = ("2025-06-18", "2025-03-26", "2024-11-05")
 FALLBACK_PROTOCOL = "2025-06-18"
 

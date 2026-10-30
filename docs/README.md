@@ -11,7 +11,7 @@
 | [architecture-map.md](./architecture-map.md) | 产品目的、主流程、能力模块、数据边界、文件边界 | 现行 |
 | [capability-index.md](./capability-index.md) | 能力清单、成熟度状态、对应样例、条目编写约定 | 现行 |
 | [verification-guide.md](./verification-guide.md) | 验收场景、交付前检查、闸门退化形态、文档变更验证方式 | 现行 |
-| [decisions/](./decisions/) | 决策记录，一主题一文件，编号连续 | 14 份 |
+| [decisions/](./decisions/) | 决策记录，一主题一文件，编号连续 | 15 份 |
 
 ## 决策记录
 
@@ -33,6 +33,7 @@
 | [0012](./decisions/0012-industry-taxonomy.md) | 行业分类：以国标门类为骨架，不为行业建原型 | 已采纳 |
 | [0013](./decisions/0013-skill-distribution.md) | 分发形态：仓库不是安装单元，产物在 `dist/startup-guide/` | 已采纳 |
 | [0014](./decisions/0014-mcp-boundary.md) | MCP 边界：只包确定性计算，暴露 resources 让无文件系统的宿主也能读全文 | 已采纳 |
+| [0015](./decisions/0015-search-fallback-in-flat.md) | 检索兜底进单文件：先判「没工具」，再判「没网」 | 已采纳（补齐 0008 的入口） |
 
 ## 新增约定
 

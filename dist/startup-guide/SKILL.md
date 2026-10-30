@@ -4,7 +4,7 @@ description: 面向创业新手的评估与陪跑技能。用户说出方向和�
 license: MIT
 compatibility: 纯 Markdown 规则，无运行时依赖，需能读文件的宿主。联网检索是可选能力，缺失时按 references/offline-degradation.md 降级，结论封顶在「信息不足」。只有生成 pptx 时需要 Python 3.9+ 与 python-pptx，缺失时降级为可粘贴文案。支持 MCP 的宿主可改用 tools/mcp_server.py（零依赖，5 个只读工具 + 全量 resources），工具只算数，判断仍在本文件。
 metadata:
-  version: "0.4.0"
+  version: "0.5.0"
   updated: "2026-10-30"
   install-unit: "dist/startup-guide"
 ---
@@ -128,6 +128,8 @@ metadata:
 
 **没有联网能力时先告知再降级**，不允许假装查过，也不允许默默降级。规则见 `references/offline-degradation.md`。
 
+但**先分清是「没网」还是「没工具」**：搜索工具报凭据错误（缺 API key、401、未配置）时，网络往往仍然通，这时按 `references/search-fallback.md` 用公开端点（DuckDuckGo → Brave，最多 3 个）直接查，不要直接宣布搜不了。端点全失败才算降级，且降级提示要写明试过哪些端点、各报什么错。
+
 ### 7. 七维体检
 
 三个硬门槛加四个软约束，用用户给的信息、原型卡的结构依据和第六步检索到的当前事实。评分口径见 `references/checkup-scorecard.md`。
@@ -216,6 +218,7 @@ P3 收定金前必须给需求确认单，把范围、交付日与加项价目�
 - 先识别生意原型，再推演。不为每个行业单独建档，用七种原型的结构去覆盖。
 - 每次评估都要跑检索循环（`references/runtime-loop.md`），查询串用 `references/search-playbook.md` 的模板，判断口径按 `references/research-protocol.md`：结构靠推演，参数靠实测，事实靠原文。只查原型卡列出的必查项，查不到就直说。
 - 检索预算 = 线上必查项 × 2，上限 12 个；线下必查项不占预算，转成用户动作。宁可交一份标注了空缺的判断，也不要搜十轮拼一个看起来完整的答案。静态卡片只决定搜什么，不提供结论。
+- 检索前先判「没网」还是「没工具」：工具报凭据错误按 `references/search-fallback.md` 打公开端点（上限 3 个），端点全失败才进入降级。
 - 没有联网能力时先告知再降级，结论封顶在「信息不足」，不判放行也不判不建议启动。规则见 `references/offline-degradation.md`。
 - 体检前必须先做模式分叉。不分模式直接算钱，是本技能最容易犯的错。
 - 每轮输出必须以「下一步唯一动作」结尾。只给判断不给动作，等于没有引导。
