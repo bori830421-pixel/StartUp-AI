@@ -11,6 +11,7 @@
 | [architecture-map.md](./architecture-map.md) | 产品目的、主流程、能力模块、数据边界、文件边界 | 现行 |
 | [capability-index.md](./capability-index.md) | 能力清单、成熟度状态、对应样例、条目编写约定 | 现行 |
 | [expansion-roadmap.md](./expansion-roadmap.md) | 从通用框架到任务级创业陪跑的分阶段推进路线 | 现行 |
+| [module-review-checklist.md](./module-review-checklist.md) | 行业、平台与任务模块的手工审核、来源复核和样例回归清单 | 现行；手工流程，无自动化工具 |
 | [verification-guide.md](./verification-guide.md) | 验收场景、交付前检查、闸门退化形态、文档变更验证方式 | 现行 |
 | [decisions/](./decisions/) | 决策记录，一主题一文件，编号连续 | 21 份 |
 

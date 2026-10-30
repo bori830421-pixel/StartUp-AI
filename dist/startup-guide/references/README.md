@@ -20,6 +20,8 @@
 | [checkup-scorecard.md](./checkup-scorecard.md) | 七维评分口径：三个硬门槛加四个软约束，含分档与不做什么 | 现行，接近上限（209 行，后续只修订） |
 | [novice-guidance.md](./novice-guidance.md) | 面向新手的输出形态原则：三类简单思维与对应写法 | 现行 |
 | [coaching-templates.md](./coaching-templates.md) | 单阶段陪跑骨架：目标、动作、交付物、话术、账本、判断点 | 现行 |
+| [task-playbook-template.md](./task-playbook-template.md) | 单项经营任务指南模板：前置条件、当次检索、交付物、检查点与停止条件 | 现行 |
+| [playbooks/xiaohongshu-shop/README.md](./playbooks/xiaohongshu-shop/README.md) | 小红书店铺任务级操作指南索引与官方来源入口 | 模拟闭环样例已建，真实任务待验证 |
 | [output-templates.md](./output-templates.md) | 报告、演示文稿、PDF 的章节结构与一致性检查 | 现行 |
 | [deck-spec.md](./deck-spec.md) | 演示文稿交付规格：两类模板的页序、每页必须成立的判断、渲染三级降级 | 现行 |
 
@@ -30,6 +32,8 @@
 `cost-discovery` 的位置在检索之后、评分之前：它要采集的租金与薪资可能走检索，而它是 H2 的分母来源。顺序反了会出现「先用假设算完 H2，再回头找依据填空」。
 
 `capital-bands` 与 `pattern-fork` 的顺序不能反：先按钱筛原型，再在剩下的原型里分模式。反了会给出「5000 元怎么开便利店」这种分叉。
+
+体检闸门通过后，若用户要完成一项具体经营动作，再按需读取 `playbooks/` 中适用的任务指南；一轮只处理一个动作，任务指南不能替代当次检索或用户实操反馈。
 
 交付形式的两个文件分工：`output-templates.md` 给章节结构与一致性检查项，`deck-spec.md` 给页序、页型与渲染降级。要出文件时先读 `deck-spec.md`，它引用了 `tools/` 的引擎。
 

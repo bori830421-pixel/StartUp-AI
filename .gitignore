@@ -32,3 +32,6 @@ __pycache__/
 # 分发产物：tools/build_skill.py 生成，但**入库**——克隆即可安装，不必先装 Python。
 # 不手改；与源文件不一致时 tools/skill_check.py 会报「产物已过期」。
 # dist/
+
+# 本地知识库：官方资料缓存，仅供本机运行时检索，不入库
+/local-knowledge/

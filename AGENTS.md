@@ -164,7 +164,7 @@ python tools/build_skill.py        # 生成 dist/startup-guide/
 python tools/build_flat.py         # 生成 B 形态 dist/startup-guide.flat.txt
 python tools/skill_check.py        # 规范、体积、死链、params 一致性、产物是否过期
 python tools/build_flat.py --check # B 形态是否过期
-python tools/mcp_server.py --selftest  # MCP 工具断言（15 项）
+python tools/mcp_server.py --selftest  # MCP 工具断言（16 项）
 python tools/skill_smoke.py --selftest # 冒烟判据自检（正样本过、反样本命中）
 python tools/doc_check.py          # 文档结构
 ```

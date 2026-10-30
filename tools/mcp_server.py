@@ -47,7 +47,7 @@ FALLBACK_PROTOCOL = "2025-06-18"
 def resource_files() -> list:
     """只暴露运行时真正有用的文件，不暴露 tools/ 与维护者资料。"""
     files = [ROOT / "SKILL.md", ROOT / "INSTALL.md", PARAMS_PATH]
-    for pattern in ("references/*.md", "data/**/*.md", "examples/*.md", "hosts/*.md"):
+    for pattern in ("references/**/*.md", "data/**/*.md", "examples/*.md", "hosts/*.md"):
         files += sorted(ROOT.glob(pattern))
     return [p for p in files if p.is_file()]
 
@@ -252,6 +252,9 @@ def selftest() -> int:
     expect("resources 可读 SKILL.md",
            handle({"jsonrpc": "2.0", "id": 2, "method": "resources/read",
                    "params": {"uri": "skill://SKILL.md"}}, params)["result"]["contents"][0]["text"].startswith("---"))
+    expect("resources 包含嵌套任务指南",
+           any(p.relative_to(ROOT).as_posix() == "references/playbooks/xiaohongshu-shop/01-product-hypotheses.md"
+               for p in resource_files()))
     expect("资源越界被拒",
            "error" in handle({"jsonrpc": "2.0", "id": 3, "method": "resources/read",
                               "params": {"uri": "skill://../AGENTS.md"}}, params))

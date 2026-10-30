@@ -16,7 +16,7 @@ SKILL_NAME = "startup-guide"
 
 ROOT_FILES = ("SKILL.md", "INSTALL.md", "LICENSE")
 TREE_GLOBS = {
-    "references": ("*.md",),
+    "references": ("**/*.md",),
     "data": ("**/*.md", "params.json"),
     "examples": ("*.md",),
     "hosts": ("*.md",),

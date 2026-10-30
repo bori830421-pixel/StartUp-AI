@@ -47,7 +47,7 @@ Windows 上 `command` 用 `python`。路径里不要用 `~`，多数客户端不
 先不接宿主，直接验服务端：
 
 ```bash
-python3 tools/mcp_server.py --selftest   # 15 项工具断言，退出码 0
+python3 tools/mcp_server.py --selftest   # 16 项工具断言，退出码 0
 python3 tools/mcp_server.py --list       # 看暴露了什么
 ```
 
