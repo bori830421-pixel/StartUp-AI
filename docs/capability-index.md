@@ -51,7 +51,7 @@
 | --- | --- | --- | --- |
 | A 目录技能 | `dist/startup-guide/` | 装到 `~/.workbuddy/skills/` 后 `skill_check.py --path` 通过（规范、死链、阈值一致性在异地成立）；`install` 用例用真实输出跑过冒烟并判定通过 | 在 WorkBuddy 之外的宿主实装 |
 | B 单文件 | `dist/startup-guide.flat.txt` | `build_flat.py --check` 与源一致；收录清单固定 5 份 | 在纯文本宿主里实跑，未测实际 token 开销 |
-| C MCP | `tools/mcp_server.py` | `--selftest` 15 项断言；管道级走通 `initialize` / `tools/list` / `tools/call` / `resources/list` / `prompts/get`；装到安装位置、从任意工作目录复跑通过 | 在真实第三方 MCP 客户端里联调 |
+| C MCP | `tools/mcp_server.py` | `--selftest` 15 项断言；管道级走通 `initialize` / `tools/list` / `tools/call` / `resources/list` / `prompts/get`；装到安装位置、从任意工作目录复跑通过；**2026-10-30 在 WorkBuddy 客户端实测通过**：5 个工具出现在列表，`capital_band(5000)` 返回 B2 | 换客户端需重跑一次（Claude Desktop / Cursor 未验） |
 | 接入验收 | `tools/skill_smoke.py` | 4 个用例各有正样本；3 个反样本各命中目标判据；一份非模板用词的合格输出未被误杀；09 / 12 / 16 已用真实输出跑过，三条通过，判据在真实措辞下不过窄 | 判据偏宽：编造 L2 参数、假闸门、收益承诺变体（「月入过万」）不被识别，须人工对照样例自检清单 |
 
 三者可叠加。MCP 只把确定性计算从推演变成调用，不改变任何判断规则。
