@@ -45,6 +45,8 @@ python tools/doctor.py        # 逐项列出必需/告警，结论直说能不�
 | 2 | **LibreOffice** | 冷启动较慢（数十秒量级） | 免安装生态最广，但明显慢于前两者 |
 | 3 | **WPS**（COM） | 约 2s | 兜底。兼容 COM 接口，但渲染细节与真实 PowerPoint 差异最大，所以排最后 |
 
+一台 Windows 机器上的实测稳定态（已预热，11 页）：PowerPoint 4–5 秒、WPS 3.8 秒、LibreOffice 47 秒。首次运行会明显更慢——PowerPoint 的 COM 冷启动尤其如此，别拿第一次的耗时当基准。
+
 **三种都没有时，出稿照常，但几何检查跳过。** 这不是错误配置，是环境差异——`doctor.py` 会把这个情况标成必需项缺失并给出安装指引，是否安装由用户决定。
 
 用 `--engine` 可强制指定：
@@ -153,7 +155,7 @@ python tools/doc_check.py --verbose    # 附带体积排行
 | --- | --- | --- |
 | `.bat` 存成 UTF-8 无 BOM | cmd.exe 按系统 ANSI 码页（中文 Windows 是 936）解析，把 `set PYTHONIOENCODING` 吃掉首字母，报 `'ONIOENCODING' is not recognized` | 存成 **UTF-8 with BOM**，并在开头 `chcp 65001` |
 | 用 `errorlevel` 判断 `py -3.12` 是否存在 | 版本不存在时 `py` 只往 stderr 报错、**退出码仍是 0**，导致误选到下一个版本 | 用 `for /f` 捕获它打印的版本号，只有打出来的值等于请求版本才算找到 |
-| 首次部署卡在渲染器 | `setup.bat` 长时间没有输出（实测一次卡了 15 分钟）；首次运行 PowerPoint（Office 2007 一类老版本）冷启动慢，超时后自动降级到 LibreOffice，而 LibreOffice 首次运行要建配置档案，可能再卡十几分钟 | 让它跑完首次冷启动；预热后复跑一次，回显应为 `渲染器：PowerPoint`。稳定态实测：PowerPoint 约 4–5 秒（11 页），LibreOffice 约 47 秒，WPS 约 4 秒。急用可 `--engine WPS` 或 `--engine PowerPoint` 强制指定 |
+| `setup.bat` 在脚本或后台里跑会「卡住」 | 长时间没有任何输出，看起来像装到一半死了。实际部署 17 秒就完成，卡住的是结尾那行 `pause`——它等键盘输入，非交互环境永远等不到 | 非交互调用时把标准输入接空：`cmd /c setup.bat < /dev/null`（Windows 原生可写 `echo.| setup.bat`）。双击运行不受影响，`pause` 是留给人看结果的 |
 
 这条依赖机器上装了什么，**不保证任何环境都有**：
 
