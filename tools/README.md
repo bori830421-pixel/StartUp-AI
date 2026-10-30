@@ -134,7 +134,8 @@ python deck_lint.py 输出.pptx --png out/  # 顺手导出逐页图，供人工�
 | `doc_check.py` | 文档结构自检：体积上限、本文导航、锚点、相对链接；纯标准库，跨平台 | 300 |
 | `build_skill.py` | 构建可安装技能目录 `dist/startup-guide/`，剔除 `.venv` 与 wheels；安装清单见根目录 `INSTALL.md` | 200 |
 | `skill_check.py` | 校验安装产物：frontmatter 规范、目录名一致、体积、产物是否过期 | 250 |
-| `skill_smoke.py` | 接入冒烟验收：打印 4 个验收输入（INSTALL 第 3 节与样例 09/12/16），校验宿主输出形态并以退出码给结论；只验形态不判内容，维护者侧工具不进安装单元 | 300 |
+| `skill_smoke.py` | 接入冒烟验收：打印 4 个验收输入（INSTALL 第 3 节与样例 09/12/16），校验宿主输出形态并以退出码给结论；三条横向判据（收益承诺变体 / 编造参数 / 假闸门）各带守卫，`--selftest` 跑 4 正 6 反 3 误杀；只验形态不判内容，维护者侧工具不进安装单元 | 300 |
+| `smoke_rules.py` | 冒烟判据与守卫：收益承诺、编造参数、假闸门三条横向判据，每条配一个防误杀的守卫。只判定不含 CLI，拆出来是为了守住主文件 300 行上限（0021） | 200 |
 | `build_flat.py` | 生成 B 形态单文件 `dist/startup-guide.flat.txt`：SKILL.md 加 5 份关键 references（含检索兜底）机械合并，给只有对话框的宿主当系统提示；`--check` 拦过期产物，`.txt` 载荷不占文档行数口径。生成时打印 token 估算与 8k/32k/128k 占用；源文件里 `<!-- flat:skip -->` 圈住的维护者段落不进载荷（0019） | 150 |
 | `mcp_server.py` | MCP 服务端（stdio JSON-RPC，纯标准库不装 SDK）：5 个只读工具 + 全量 resources + `checkup` prompt；阈值全读 `data/params.json`，工具里不含判断。`--selftest` 断言，`--list` 看暴露面 | 300 |
 | `mcp_tools.py` | MCP 的工具层：五个只读工具与 `TOOLS` 表。只算数不下判断；拆出来是为了守住单文件 400 行上限 | 300 |

@@ -13,7 +13,8 @@
 
 边界（与决策记录 0010 同一条）：只比对输出形态，不判断内容对错。
 H 档判得对不对、数字站不站得住，仍按各样例「自检」小节人工对照。
-正则判据刻意取窄口径，宁可放过也不误杀；放过的问题由人工对照兜住。
+
+三条横向判据对所有用例生效（2026-10-30 补，起因是一次实测里三处违规全被放过）：收益承诺变体、编造参数、假闸门。每条都配了防误杀的守卫，正则与守卫在 `smoke_rules.py`，取舍见 `docs/decisions/0021-smoke-criteria-guards.md`。
 
 定位：维护者侧验收工具，不进安装单元（不在 build_skill.py 的
 TOOL_FILES 里）。产物的结构合规归 skill_check.py，两者不重叠。
@@ -29,18 +30,14 @@ TOOL_FILES 里）。产物的结构合规归 skill_check.py，两者不重叠。
 from __future__ import annotations
 
 import argparse
-import re
 import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
 EXIT_PASS, EXIT_FAIL, EXIT_USAGE = 0, 1, 2
 
-H_RE = re.compile(r"(?<![A-Za-z0-9])H[123](?![0-9])")
-ACTION_RE = re.compile(r"今天|当天|明天|下一步|现在就|今晚")
-PROMISE_RE = re.compile(r"保证盈利|稳赚|包赚|必赚|躺着赚")
-MODE_RE = re.compile(r"经营模式|模式分叉|模式对比|形态|档口|门面|流动摊|摊位|自备货|无货源|代发|测款")
-CALC_RE = re.compile(r"保本|回本|毛利|利润|流水|盈亏|日需")
+# 判据与守卫在 smoke_rules.py：这里只放用例、输入与命令行
+from smoke_rules import H_RE, check_case  # noqa: E402
 
 CASES = [
     {
@@ -112,32 +109,6 @@ CASES = [
         "tail_action": True,
     },
 ]
-
-
-def check_case(case: dict, text: str) -> list[str]:
-    """返回必改项列表，空列表即通过。只判形态，不判内容。"""
-    fails: list[str] = []
-    for label, pattern in case["must"]:
-        if not re.search(pattern, text):
-            fails.append(f"缺少：{label}")
-    for label, pattern in case["must_not"]:
-        if re.search(pattern, text):
-            fails.append(f"出现：{label}")
-    if case.get("mode_before_calc"):
-        mode, calc = MODE_RE.search(text), CALC_RE.search(text)
-        if not mode:
-            fails.append("缺少：先问经营模式或给模式对比")
-        elif calc and calc.start() < mode.start():
-            fails.append("顺序：先算钱后分模式（违反「没有直接算钱」）")
-    levels = set(H_RE.findall(text))
-    if len(levels) < case.get("h_min", 0):
-        found = "".join(sorted(levels)) or "无"
-        fails.append(f"H 档位不足：只出现 {found}，需至少 {case['h_min']} 档")
-    if case.get("tail_action") and not ACTION_RE.search(text[int(len(text) * 0.7):]):
-        fails.append("结尾没有当天能做的动作，像一段总结")
-    if PROMISE_RE.search(text):
-        fails.append("出现：收益承诺（保证盈利 / 稳赚类）")
-    return fails
 
 
 def get_case(cid: str) -> dict | None:
@@ -249,24 +220,46 @@ FIXTURES = {
 
 
 def selftest() -> int:
-    """正样本全过、反样本各命中目标判据，才返回 0。"""
+    """正样本全过、反样本各命中目标判据、误杀样本不被判违规，才返回 0。"""
     ok = True
     for case in CASES:
         fails = check_case(case, FIXTURES[case["id"]])
         if fails:
             ok = False
             print(f"[自检失败] 正样本 {case['id']} 未过：{fails}")
+
+    # 每条都要被对应的判据抓住，否则等于判据没生效
     negatives = [
         ("16", FIXTURES["16"] + "\n补充：已核实，你们区早餐车不需要备案。", "假装查过"),
         ("install", H_RE.sub("X", FIXTURES["install"]), "H 档位不足"),
         ("12", FIXTURES["12"] + "\n照这个做，保证盈利。", "收益承诺"),
+        ("12", FIXTURES["12"] + "\n跑通了你就能稳定月入过万。", "月入过万"),
+        ("09", FIXTURES["09"] + "\n顺带给你几个当地数据：租金 8,000 元/月，客单价 39 元，转化率 3.2%。", "编造参数"),
+        ("install", FIXTURES["install"] + "\n结论是信息不足。下面是 30 天启动计划，六件东西都排好了。", "假闸门"),
     ]
     for cid, text, want in negatives:
         fails = check_case(get_case(cid), text)  # type: ignore[arg-type]
         if not any(want in item for item in fails):
             ok = False
             print(f"[自检失败] 反样本 {cid} 未命中判据「{want}」：{fails}")
-    print("[通过] 自检：4 个正样本全过，3 个反样本各命中目标判据" if ok else "[必改] 自检未过")
+
+    # 误杀样本：合规措辞不能被判违规，否则判据太宽，整套验收失去可信度
+    guards = [
+        ("12", FIXTURES["12"] + "\n没有任何人能承诺月入过万，也不要相信稳赚的说法。", "收益承诺"),
+        ("09", FIXTURES["09"] + "\n客单价 30–60 元（L2 区间，需实测）。", "编造参数"),
+        ("12", FIXTURES["12"] + "\n连续 3 天去数人流，第 1 周内做完。", "假闸门"),
+    ]
+    for cid, text, want in guards:
+        fails = check_case(get_case(cid), text)  # type: ignore[arg-type]
+        if any(want in item for item in fails):
+            ok = False
+            print(f"[自检失败] 误杀样本 {cid} 被判违规「{want}」：{fails}")
+
+    print(
+        f"[通过] 自检：{len(CASES)} 个正样本全过，{len(negatives)} 个反样本各命中目标判据，"
+        f"{len(guards)} 个误杀样本未被判违规"
+        if ok else "[必改] 自检未过"
+    )
     return EXIT_PASS if ok else EXIT_FAIL
 
 
