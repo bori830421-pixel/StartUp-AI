@@ -8,178 +8,126 @@
 
 B 形态（单文件）也收录了本文件，所以「没工具」这条路径在只拿到一段文本的宿主上同样可用。
 
-## 这些结论的适用范围
-
-**本文件里的端点实测结果，来自一次具体的测试环境，不是永久保证。** 公开端点随时可能改版、加验证、封禁脚本请求。
-
-所以用法是：**先把下面当候选，用之前现场验一次**。验证方法很简单——拿一个已知答案的查询试一次，检查返回内容里有没有关键词。验不通就换下一个端点，全都验不通才降级。
-
-不要因为本文件写了「可用」就直接相信它可用，也不要因为某个端点在别的环境不可用就认为它永远不可用。
-
 ## 本文导航
 
-- [先判：是没网，还是没工具](#先判是没网还是没工具)
-- [调用顺序与上限](#调用顺序与上限)
-- [实测可用的公开端点](#实测可用的公开端点)
-- [端点的实测结论](#端点的实测结论)
-- [怎么调（可直接照抄）](#怎么调可直接照抄)
+- [端点不排顺序，由你现场判断](#端点不排顺序由你现场判断)
+- [怎么判断一个端点能不能用](#怎么判断一个端点能不能用)
+- [候选池：国内可达组](#候选池国内可达组)
+- [候选池：境外组](#候选池境外组)
+- [官方站点直连：不用搜也能到](#官方站点直连不用搜也能到)
+- [实测记录（2026-10-30，中国大陆网络）](#实测记录2026-10-30中国大陆网络)
 - [调用纪律](#调用纪律)
-- [如果环境自带 SearXNG](#如果环境自带-searxng)
 - [做不到的事](#做不到的事)
 
-## 先判：是没网，还是没工具
+## 端点不排顺序，由你现场判断
 
-发起一次最小试探后，按结果分三种：
+本文件**不给端点排名**，只给候选池、判定方法和预算上限。选哪个、先试哪一组，由当前会话现场决定。
 
-| 现象 | 判定 | 去哪处理 |
+理由是端点的可用性取决于运行环境：同一条 URL，在一台机器上返回真实结果，在另一台机器上可能是连不上、验证页、空壳页或广告填充。写死顺序的唯一效果，是让后一种环境照着念一张不属于它的表。**顺序是判断的产物，不是判断的输入。**
+
+## 怎么判断一个端点能不能用
+
+**唯一判据：返回内容里，查询主体关键词在结果区出现了几次。** 不看状态码，不看域名能不能解析，不看页面能不能打开。
+
+失败要分类记，因为对用户的修复建议不同：
+
+| 失败类型 | 表现 | 对用户意味着 |
 | --- | --- | --- |
-| 搜索工具存在但报配置错误（如缺 API key） | **没工具**，但可能有网 | 本文件 |
-| 搜索工具不存在，但能抓网页 | 没工具 | 本文件 |
-| 抓网页也失败（超时、DNS 失败） | 真离线 | `offline-degradation.md` |
+| 连不上 | `fetch failed`、超时、DNS 失败 | 这条网络到不了该域名 |
+| 需跳转 | `cross-origin redirect`、跳到另一个域名 | 该 URL 要换成跳转后的目标域名 |
+| 空壳页 | HTTP 200，但只有导航、热榜、标题，正文区无结果 | 结果靠脚本渲染，抓取工具拿不到 |
+| 验证页 | HTTP 200，出现 Captcha、`JavaScript is required` | 端点对非浏览器请求设了人机验证 |
+| 广告填充 | HTTP 200，有结果块但内容与查询无关 | 端点对非浏览器请求返回广告位 |
 
-判据只有一条：**能不能访问任意一个外部 URL**。能访问就有救。
+五类都算**不可用**。上表后三行全是 200，所以**不能把状态码当成功**。
 
-典型报错形态：
+判定固定三步：
 
-```text
-DeepSeek search has no API key for "DEEPSEEK_API_KEY"
-```
+1. **先测基线。** 打开一个几乎不可能失败的域名（如 `https://www.gov.cn/`）。打不开，说明是网络问题，直接转 `offline-degradation.md`，不要再试端点。
+2. **按基线选组。** 基线能开、境外端点连不上，就是国内网络，从国内组开始；两组都能开，两组都可以试，但仍是**一次一个**。
+3. **发一条检索计划里的查询，数关键词。** 结果区出现查询主体关键词才算可用；只有页头、热榜、导航里出现，算空壳页。
 
-这不是网络问题。此时不要直接宣布「无法检索」，按下面的顺序试公开端点，并守住三个端点的上限。
+## 候选池：国内可达组
 
-> **反例（2026-10-30 实测）**：搜索工具报 `no API key`，改打 DuckDuckGo 与 Brave 两个端点，都是 `fetch failed`（连不上）；同一台机器的 shell 也起不来（`0xC0000142`）。这种情况三个端点都救不回来，属于「工具有、网没通」，按 `offline-degradation.md` 带记录降级。**当时只试了两个端点就降级，看起来像没尽力**——差的就是《离线降级》第二节第五句那份检索记录。
+适合只能访问中国大陆网络的宿主：国内办公网络、内网代理、或境外域名被整体限制的环境。
 
-## 调用顺序与上限
-
-兜底也要有收口，否则「没工具」会变成无限换端点。
-
-| 顺序 | 端点 | 什么时候用 |
-| --- | --- | --- |
-| 1 | DuckDuckGo HTML | 默认首选 |
-| 2 | Brave | DuckDuckGo 判为不可用（202 挑战页、无关键词、连不上） |
-| 3 | 下表其它标记为可用的端点 | 前两个都不可用 |
-| — | SearXNG（若环境提供） | 环境变量存在且可用时，**排在第 1 位**，不占下面 3 个的名额 |
-
-**上限 3 个公开端点，每个端点只试一条查询。** 三个都失败，说明这台机器的出站访问有问题，不是端点的问题——立即转 `offline-degradation.md`，并把试过的端点与报错写进降级提示的第五句。
-
-这条上限的理由和第 1 节是同一条：**兜底不是重试，是换路。** 同一条路换三个引擎打六遍，拿回来的还是同一份「没有网」。
-
-## 实测可用的公开端点
-
-以下全部在 2026-10-29 实测，Windows + PowerShell 环境，无需 API key。
-
-| 端点 | URL 形态 | 状态 | 相关度 |
+| 端点 | URL 形态 | 能用时的样子 | 已知坑 |
 | --- | --- | --- | --- |
-| **DuckDuckGo HTML** | `https://html.duckduckgo.com/html/?q={query}` | 200，约 2.1s | **高**，推荐首选 |
-| **Brave** | `https://search.brave.com/search?q={query}` | 200，约 3.5s | **高**，结果量大但页面重 |
-| Bing | `https://www.bing.com/search?q={query}` | 200，约 1.3s | **不可用**，见下 |
-| Mojeek | `https://www.mojeek.com/search?q={query}` | 403 | 不可用 |
-| Startpage | `https://www.startpage.com/sp/search?query={query}` | 200，但无结果结构 | 不可用 |
-| SearXNG（若环境提供） | 地址从 `OPENCLAW_WEB_SEARCH_SEARXNG_BASE_URL` 读 | 视环境而定 | 有则优先，不要假设存在 |
+| 必应国内版 | `https://cn.bing.com/search?q={query}` | 标题带站点域名、摘要带日期 | 主域名 `www.bing.com` 会 302 到这里，抓取工具常不跟随跨域跳转，必须直连 cn；页尾可能有「部分结果未予显示」 |
+| 微信搜一搜（搜狗镜像） | `https://weixin.sogou.com/weixin?type=2&query={query}` | 标题命中查询，附公众号名称 | 链接是 `/link?url=...&token=...` 跳转；**结果是公众号内容，只当线索** |
 
-## 端点的实测结论
+两个端点分工不同：必应覆盖面广，微信适合找地方政务号、办事通知这类官网不索引的内容。**微信结果不能直接进判断**——它是转述，摘要把线索交出来，原文要打开跳转后的页面并核对发布方与日期。
 
-**Bing 不能用于中文查询。** 实测查询「赣州 奶茶店 店员 工资」，返回的 10 个 `b_algo` 结果块全是无关广告（男鞋、彩票），页面里「赣州」只出现 6 次，「奶茶」6 次。加 cookie 会话重试后依然如此。
+## 候选池：境外组
 
-**结论：Bing 对非浏览器请求返回广告填充页，不能作为检索来源。** 不要因为它 HTTP 200 就认为可用——必须检查返回内容是否含查询关键词。
+适合能访问境外域名的宿主。**不要把它当默认起点**：在国内网络里试境外端点，等于把预算花在证明自己到不了。
 
-**DuckDuckGo 与 Brave 返回真实结果。** 同一查询，Brave 页面里「奶茶」出现 105 次、「赣州」37 次，是真实结果页。
+| 端点 | URL 形态 | 能用时的样子 | 已知坑 |
+| --- | --- | --- | --- |
+| DuckDuckGo HTML | `https://html.duckduckgo.com/html/?q={query}` | `result__a` 标题配 `result__snippet` 摘要 | 需完整浏览器头 + Cookie 处理，漏了会拿到 202 挑战页；`lite.` 与主域名同源同限制 |
+| Brave | `https://search.brave.com/search?q={query}` | 结果量大 | 页面约 170 KB，结构随版本变 |
+| Mojeek | `https://www.mojeek.com/search?q={query}` | 结果页 | 对非浏览器请求可能给 Captcha |
+| Ecosia | `https://www.ecosia.org/search?q={query}` | 结果页 | 实际 302 到 bing，等于绕回必应 |
+| Yahoo | `https://search.yahoo.com/search?p={query}` | 结果页 | 国内网络常见不可达 |
 
-**DuckDuckGo 有反爬。** 只带 User-Agent 的 Python `urllib` 请求拿到 **HTTP 202 + 约 14 KB 挑战页**（零结果）；补上完整 Accept / Accept-Language / Referer 头并加 Cookie 处理器后，变成 **HTTP 200 + 31 KB + 10 条结果**。PowerShell 的 `Invoke-WebRequest` 默认头更全，所以一开始就能拿到结果。
+SearXNG 只给**自建实例**用：环境里存在 `OPENCLAW_WEB_SEARCH_SEARXNG_BASE_URL` 且实测可用时才用；变量不存在是正常情况，不要去找。
 
-**共同要求**：必须带浏览器 User-Agent，且 DuckDuckGo 还要完整的 Accept 系列头与 Cookie 处理。缺一项就可能拿到 202 空页。
+## 官方站点直连：不用搜也能到
 
-## 怎么调（可直接照抄）
+**不属于搜索端点，但最该先想到。** 政策条款、处罚标准、办理条件这类必查项，只要知道去哪个部门，直接打开即可，不需要先搜到入口：
 
-### DuckDuckGo（推荐首选）
+| 查什么 | 直接打开哪里 |
+| --- | --- |
+| 国家层面政策原文 | `https://www.gov.cn/`，政策文件库按关键词查 |
+| 地方政策与办事指南 | 省政府、市政府、人社局 / 市场监管局子站 |
+| 平台规则、佣金、入驻门槛 | 平台官方帮助中心 |
+| 企业登记事项 | 国家企业信用信息公示系统 |
 
-```bash
-curl -s -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" \
-  "https://html.duckduckgo.com/html/?q=%E8%B5%A3%E5%B7%9E%20%E6%9C%80%E4%BD%8E%E5%B7%A5%E8%B5%84"
-```
+这条通道不依赖任何搜索引擎的抓取策略，比任何端点都稳。**检索计划里凡是能落到具体部门的项，都不该排进端点兜底。**
 
-结果解析：按 `result__a`（标题）与 `result__snippet`（摘要）成对提取。
+## 实测记录（2026-10-30，中国大陆网络）
 
-**Python 版必须带完整请求头 + Cookie 处理器**，只带 User-Agent 会拿到 HTTP 202 反爬挑战页（约 14 KB，零结果）：
+同一天、同一台机器、同一组查询的完整结果，供判断时对照。**这是记录，不是标准**——换一台机器要重测。
 
-```python
-import re, urllib.parse, urllib.request, http.cookiejar
+**可用**
 
-def ddg(query, n=8):
-    url = "https://html.duckduckgo.com/html/?q=" + urllib.parse.quote(query)
-    headers = {
-        "User-Agent": ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                       "AppleWebKit/537.36 (KHTML, like Gecko) "
-                       "Chrome/131.0.0.0 Safari/537.36"),
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
-        "Accept-Encoding": "identity",
-        "Referer": "https://html.duckduckgo.com/",
-    }
-    opener = urllib.request.build_opener(
-        urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
-    resp = opener.open(urllib.request.Request(url, headers=headers), timeout=25)
-    html = resp.read().decode("utf-8", "replace")
-    pat = re.compile(r'result__a[^>]*>(.*?)</a>.*?result__snippet[^>]*>(.*?)</a>',
-                     re.S)
-    strip = lambda s: re.sub(r"<[^>]+>", "", s).strip()
-    return [(strip(t), strip(s)) for t, s in pat.findall(html)][:n]
-```
+| 端点 | 结果 |
+| --- | --- |
+| `cn.bing.com` | 真实中文结果，标题与站点域名都对得上查询 |
+| `weixin.sogou.com` | 823 条公众号结果，含地方政务号（赣州发布、赣州广播电视台） |
+| `www.gov.cn` | 正常打开，基线可达 |
 
-这段代码在 2026-10-29 实测：HTTP 200，解析出 10 条真实结果。**只去掉 Cookie 处理器或 Accept 头就会退回 202 挑战页**，这点务必保留。
+**不可用，及其原因**
 
-### Brave
+| 端点 | 失败类型 | 实测 |
+| --- | --- | --- |
+| `www.bing.com` | 需跳转 | 302 到 `cn.bing.com`，抓取工具直接报错 |
+| `www.sogou.com/web` | 空壳页 | 200，正文区无结果 |
+| `www.baidu.com/s` | 空壳页 | 200，正文区无结果 |
+| `so.toutiao.com` | 空壳页 | 200，只有导航与热榜，结果靠脚本渲染 |
+| Mojeek | 验证页 | 200，Captcha 挑战 |
+| DuckDuckGo（`html.` / 主域名 / `lite.`） | 连不上 | 全部 `fetch failed` |
+| Brave | 连不上 | `fetch failed` |
+| Yahoo | 连不上 | `fetch failed` |
+| Ecosia | 需跳转 | 302 到 bing |
 
-```bash
-curl -s -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 \
-(KHTML, like Gecko) Chrome/131.0 Safari/537.36" \
-  "https://search.brave.com/search?q=%E8%B5%A3%E5%B7%9E%20%E8%8C%B6%E9%A5%AE%20%E5%B7%A5%E8%B5%84"
-```
+**从记录里读出的三条判断：**
 
-页面较重（约 170 KB），且结构随版本变化，用于交叉验证，不做主渠道。
-
-### PowerShell 版（Windows 环境）
-
-```powershell
-$enc = [uri]::EscapeDataString('赣州 最低工资标准')
-$r = Invoke-WebRequest "https://html.duckduckgo.com/html/?q=$enc" -TimeoutSec 20 `
-      -UseBasicParsing -Headers @{'User-Agent'='Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
-[regex]::Matches($r.Content, 'result__a[^>]*>(.*?)</a>.*?result__snippet[^>]*>(.*?)</a>', 'Singleline') |
-  ForEach-Object {
-    ($_.Groups[1].Value -replace '<[^>]+>','' -replace '\s+',' ').Trim()
-    ($_.Groups[2].Value -replace '<[^>]+>','' -replace '\s+',' ').Trim()
-  }
-```
+1. **「国内可达」不等于「能拿到结果」。** 百度、搜狗网页、头条都是 200 且国内可达，结果区却是空的。只按域名归属选端点，会选中这三个。
+2. **境外端点在这条网络上全灭，不是它们坏了。** 换一条能访问境外的网络，它们仍是有效候选——所以它们的失败记录写的是环境，不是端点。
+3. **`www.bing.com` 要用 `cn.bing.com`。** 主域名会跳转，抓取工具多数不跟随跨域跳转，第一跳就报错。
 
 ## 调用纪律
 
 这仍然是检索，**一样受 `runtime-loop.md` 的预算约束**（线上必查项 × 2，上限 12；成本类单独 2 个）。换端点不等于可以多搜。
 
-四条额外要求：
+五条要求：
 
-1. **必须验证结果相关。** 拿到 HTML 不算成功，要检查返回内容里有没有查询主体的关键词。Bing 的教训就在这里：HTTP 200 但内容是广告。
-2. **带浏览器 User-Agent。** 裸 `urllib` 默认 UA 常被拒。
-3. **一次只用一个端点，失败再换。** 不要三个端点同时打同样的查询，那是三倍预算换同一份信息。
+1. **先测基线，再选组。** 基线打不开就不是端点问题，按 `offline-degradation.md` 处理，别再试。
+2. **必须验证结果相关。** 拿到 HTML 不算成功，要看结果区有没有查询主体关键词。实测里五个失败的端点全是 HTTP 200。
+3. **换了端点也要换查询串。** 同一条查询打三个端点，拿回来的是三份一样的空。
 4. **端点结果只当线索。** 摘要用来发现线索，原文用来做依据（`research-protocol.md`）。政策条款必须再打开原文。
-
-## 如果环境自带 SearXNG
-
-有些环境会配 SearXNG 作为搜索后端。**不要假设它存在**——先查环境里有没有这两项变量，有的话再测端口通不通：
-
-```text
-OPENCLAW_WEB_SEARCH_PROVIDER=searxng
-OPENCLAW_WEB_SEARCH_SEARXNG_BASE_URL=<地址>
-```
-
-三种结果，处理不同：
-
-| 情况 | 处理 |
-| --- | --- |
-| 变量不存在 | **正常情况**，直接用上面的公开端点，不要去找 SearXNG |
-| 变量在但端口连不上 | 服务没启动。**不要等它，也不要尝试启动它**，直接用公开端点 |
-| 变量在且可用 | 优先用它，因为它是为这个环境配好的 |
-
-**不要在本文件里记录某个具体环境的地址。** 别人的机器上没有那个服务，写进来只会让人白试一次。地址一律从环境变量读，读不到就走公开端点。
+5. **记下失败类型，不是只记「失败」。** 降级提示要写清是连不上、需跳转、空壳、验证页还是广告——用户据此才知道该配密钥、换网络，还是该去问当地部门。
 
 ## 做不到的事
 

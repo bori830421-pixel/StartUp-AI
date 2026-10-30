@@ -11,7 +11,7 @@
 | [architecture-map.md](./architecture-map.md) | 产品目的、主流程、能力模块、数据边界、文件边界 | 现行 |
 | [capability-index.md](./capability-index.md) | 能力清单、成熟度状态、对应样例、条目编写约定 | 现行 |
 | [verification-guide.md](./verification-guide.md) | 验收场景、交付前检查、闸门退化形态、文档变更验证方式 | 现行 |
-| [decisions/](./decisions/) | 决策记录，一主题一文件，编号连续 | 15 份 |
+| [decisions/](./decisions/) | 决策记录，一主题一文件，编号连续 | 17 份 |
 
 ## 决策记录
 
@@ -23,7 +23,7 @@
 | [0002](./decisions/0002-two-stage-gate.md) | 两阶段与闸门 | 已采纳 |
 | [0003](./decisions/0003-data-layer.md) | 行业档案与数据分级 | 已采纳 |
 | [0004](./decisions/0004-pattern-fork.md) | 模式分叉前置 | 已采纳 |
-| [0005](./decisions/0005-file-size-and-navigation.md) | 文件规模与导航索引 | 已采纳 |
+| [0005](./decisions/0005-file-size-and-navigation.md) | 文件规模与导航索引 | 已采纳（体积上限由 0017 修订） |
 | [0006](./decisions/0006-archetype-layer.md) | 按原型分类，不按行业分类 | 已采纳 |
 | [0007](./decisions/0007-runtime-retrieval.md) | 技能是运行时流程，不是静态知识库 | 已采纳 |
 | [0008](./decisions/0008-offline-degradation.md) | 没有联网时的降级规则 | 已采纳 |
@@ -34,6 +34,8 @@
 | [0013](./decisions/0013-skill-distribution.md) | 分发形态：仓库不是安装单元，产物在 `dist/startup-guide/` | 已采纳 |
 | [0014](./decisions/0014-mcp-boundary.md) | MCP 边界：只包确定性计算，暴露 resources 让无文件系统的宿主也能读全文 | 已采纳 |
 | [0015](./decisions/0015-search-fallback-in-flat.md) | 检索兜底进单文件：先判「没工具」，再判「没网」 | 已采纳（补齐 0008 的入口） |
+| [0016](./decisions/0016-endpoint-pools.md) | 端点不排顺序：国内 / 境外两份候选池，基线定判据，由智能体现场判断 | 已采纳（修订 0015 的固定顺序） |
+| [0017](./decisions/0017-doc-size-cap.md) | 文档硬上限 24 KB → 32 KB：阈值从「防过大」退化成「逼拆分」 | 已采纳（修订 0005 的体积一项） |
 
 ## 新增约定
 
