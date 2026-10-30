@@ -11,7 +11,7 @@
 | [architecture-map.md](./architecture-map.md) | 产品目的、主流程、能力模块、数据边界、文件边界 | 现行 |
 | [capability-index.md](./capability-index.md) | 能力清单、成熟度状态、对应样例、条目编写约定 | 现行 |
 | [verification-guide.md](./verification-guide.md) | 验收场景、交付前检查、闸门退化形态、文档变更验证方式 | 现行 |
-| [decisions/](./decisions/) | 决策记录，一主题一文件，编号连续 | 19 份 |
+| [decisions/](./decisions/) | 决策记录，一主题一文件，编号连续 | 20 份 |
 
 ## 决策记录
 
@@ -38,6 +38,7 @@
 | [0017](./decisions/0017-doc-size-cap.md) | 文档硬上限 24 KB → 32 KB：阈值从「防过大」退化成「逼拆分」 | 已采纳（修订 0005 的体积一项） |
 | [0018](./decisions/0018-pdf-check-optional.md) | PDF 几何检查降为可选层：验证手段不是交付前提 | 已采纳（修订 0010 的依赖口径） |
 | [0019](./decisions/0019-flat-payload-budget.md) | 单文件体积由脚本现算，载荷只收运行时指令 | 已采纳（修订 0015 的体积口径） |
+| [0020](./decisions/0020-knowledge-layers-and-curation.md) | 知识分层、按需检索与审核式经验沉淀 | 已采纳；不含集中收集与服务器 |
 
 ## 新增约定
 
