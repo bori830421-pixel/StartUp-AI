@@ -20,6 +20,10 @@ import argparse
 import json
 import sys
 
+# 不写字节码缓存。这个脚本常从安装目录（dist/startup-guide/tools/）直接启动，
+# 默认行为会在同级生成 __pycache__，把安装产物弄脏，skill_check 会判「多出文件」。
+sys.dont_write_bytecode = True
+
 from mcp_tools import (
     PARAMS_PATH,
     ROOT,

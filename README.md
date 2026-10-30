@@ -41,17 +41,16 @@ python tools/skill_check.py     # 校验规范、体积、死链、阈值一致�
 
 三种形态都已支持：目录技能（首选）、单文件注入（只有对话框的宿主）、MCP（`tools/mcp_server.py`，零依赖）。装法与验证见 [INSTALL.md](./INSTALL.md)，各形态细节见 [hosts/](./hosts/README.md)。
 
-**还没验证的一件事。** 已实现不等于已验证，这一条是目前明确没做到的：
+**三种形态都已跑过一次真实宿主。** 实测记录，以及仍然存在的缺口：
 
-| 缺口 | 现在做到哪 | 怎么补 |
+| 形态 | 实测结果 | 残余缺口 |
 | --- | --- | --- |
-| 单文件形态在纯文本宿主实跑 | `build_flat.py --check` 保证与源逐字节一致；实际 41 KB / 781 行的 token 开销没测过 | 全文贴进网页版对话，跑 `INSTALL.md` 第 3 节那句验证 |
-
-MCP 已于 2026-10-30 在 WorkBuddy 客户端实测通过：`initialize` 回 `protocolVersion=2024-11-05`、`serverInfo=startup-guide 0.4.0`，`tools/list` 列出 5 个工具，`capital_band(5000)` 返回 B2。
+| MCP | 2026-10-30 在 WorkBuddy 客户端通过：5 个工具出现在列表，`capital_band(5000)` 返回 B2，`initialize` 回 `protocolVersion=2024-11-05` | 换客户端需重跑（Claude Desktop / Cursor 未验） |
+| 单文件 | 2026-10-30 在 DeepSeek 桌面端通过 `install` 三条判据；token 首次测得约 12,600（8k 宿主装不下，32k 占 38.5%） | 断网分支漏了 A/B 两条路；8k 上下文宿主未验 |
 
 冒烟用例 09 / 12 / 16 已于 2026-10-30 用真实输出跑过，三条全部通过。但**只验形态**：实测一份编造客单价与转化率、并把 H1 判成「信息不足」却给出完整三十天计划的输出，同样能通过判据。内容合格与否仍须按各样例的「自检」小节人工对照，判据抓不到编造参数与假闸门。
 
-单文件形态这一条不阻塞安装：`dist/startup-guide/` 已在仓库里，克隆即可用。逐条判据与不合格时的处理顺序见 [验证指南](./docs/verification-guide.md) 的「接入形态的验证缺口」。
+逐条判据与不合格时的处理顺序见 [验证指南](./docs/verification-guide.md) 的「接入形态的验证缺口」。
 
 ## 目录
 
