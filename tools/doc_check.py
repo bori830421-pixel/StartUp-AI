@@ -23,8 +23,10 @@ CODE_LINE_MAX = 400
 NAV_REQUIRED_OVER = 120
 # .venv 是 setup.bat 装的第三方依赖，不是本项目的代码，必须跳过——
 # 否则光 Pillow/pptx 就有上百个文件越过代码行数上限，把真缺陷淹没。
-SKIP_DIRS = {".workbuddy-ai", ".git", ".tmp-deckcheck", "__pycache__",
-             "node_modules", ".venv", "venv", ".env", "wheels"}
+SKIP_DIRS = {"__pycache__", "node_modules", "venv", ".env", "wheels"}
+# 工具运行产物：deck_lint / doctor / 预览在项目内建临时目录（%TEMP% 在本机不可写）。
+# 异常退出会留下残骸，里面可能带 200+ 行的 text.md；不跳就会把运行残骸报成文档缺陷。
+SKIP_PREFIXES = ("decklint-", "ar_pptx_", "doctor-probe-")
 
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.*?)\s*$")
 LINK_RE = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
@@ -42,7 +44,12 @@ def walk(root: str):
     """按体积倒序列出所有待检文件，跳过无关目录。"""
     found = []
     for dirpath, dirnames, filenames in os.walk(root):
-        dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS]
+        # 点开头的一律跳过：.git / .venv / .workbuddy-ai / .backup / .preview 都是
+        # 工具或宿主产物，不是本项目的文档
+        dirnames[:] = [d for d in dirnames
+                       if d not in SKIP_DIRS
+                       and not d.startswith(".")
+                       and not d.startswith(SKIP_PREFIXES)]
         for name in filenames:
             if name.endswith((".md", ".py")):
                 path = os.path.join(dirpath, name)

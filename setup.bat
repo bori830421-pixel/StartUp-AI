@@ -10,8 +10,9 @@ REM
 REM  双击运行。做四件事：
 REM    1. 找一个可用的 Python（3.9+）
 REM    2. 在项目根目录建 .venv（不动系统 Python）
-REM    3. 从 tools\wheels\ 离线装依赖（不需要联网）
-REM    4. 出 3 页 pptx 做冒烟测试，再跑环境体检
+REM    3. 默认只安装出 PPTX 必需依赖，优先使用 tools\wheels\ 离线 wheel
+REM    4. 出 3 页 pptx 做冒烟测试，再检查基础环境
+REM  可选：setup.bat --with-pdf-check 安装 PDF 几何检查依赖并检查渲染环境。
 REM
 REM  两个实测踩过的坑，改之前先看：
 REM  1. 本文件必须存为 UTF-8 with BOM。cmd.exe 按系统 ANSI 码页解析
@@ -26,6 +27,14 @@ echo ============================================================
 echo   StartUp-AI 部署
 echo   项目目录：%CD%
 echo ============================================================
+if /i "%~1"=="--with-pdf-check" (
+    set "DOCTOR_ARGS=--pdf"
+    echo   模式：附加 PDF 几何检查（环境可能较繁琐）
+) else (
+    set "DOCTOR_ARGS="
+    echo   模式：基础 PPTX 出稿（推荐）
+)
+echo   用法：setup.bat [--with-pdf-check]
 
 echo.
 echo [1/4] 查找 Python（需要 3.9 及以上）...
@@ -62,12 +71,12 @@ if not "%PYEXE%"=="python" echo   [OK] %PYEXE%
 
 echo.
 echo [2/4] 创建虚拟环境并安装依赖...
-%PYEXE% "tools\bootstrap.py" --python="%PYEXE%"
+%PYEXE% "tools\bootstrap.py" --python="%PYEXE%" %*
 if errorlevel 1 goto :failed
 
 echo.
 echo [3/4] 环境体检...
-".venv\Scripts\python.exe" "tools\doctor.py"
+".venv\Scripts\python.exe" "tools\doctor.py" %DOCTOR_ARGS%
 if errorlevel 1 (
     echo.
     echo ============================================================
@@ -86,11 +95,11 @@ echo.
 echo   出稿：make-ppt.bat tools\briefs\01-chenghai-zhaoyiming.json 输出.pptx
 echo   用例：make-ppt.bat --list
 echo.
-echo   注意：上面若提示「未检测到 Microsoft PowerPoint」，先装 PowerPoint，
-echo         再双击本文件重跑一次体检。它是几何检查的首选渲染器。
+echo PDF 转换与几何检查是可选项，环境配置可能比较繁琐，默认不建议安装。
+echo 如确有需要，可运行：setup.bat --with-pdf-check
+echo PowerPoint / LibreOffice / WPS 需自行另装，本脚本不会安装它们。
 echo ============================================================
 echo.
-pause
 exit /b 0
 
 :failed

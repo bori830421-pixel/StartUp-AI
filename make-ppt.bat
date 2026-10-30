@@ -5,12 +5,13 @@ set PYTHONUTF8=1
 cd /d "%~dp0"
 
 REM ===================================================================
-REM  出 PPT：渲染 + 几何检查
+REM  出 PPT：默认只生成 PPTX；附加参数时运行可选几何检查
 REM
 REM  用法：
 REM    make-ppt.bat tools\briefs\01-chenghai-zhaoyiming.json 输出.pptx
 REM    make-ppt.bat --list                  列出现有用例
-REM    make-ppt.bat b.json out.pptx --png   顺带导出逐页图
+REM    make-ppt.bat b.json out.pptx --check  运行可选几何检查
+REM    make-ppt.bat b.json out.pptx --png preview\  检查并导出逐页图
 REM
 REM  检查不通过会明确说卡在哪，不会静默降级成「已生成」。
 REM  本文件必须存为 UTF-8 with BOM（原因见 setup.bat）。
@@ -46,17 +47,24 @@ if not exist "%BRIEF%" (
 )
 
 set "EXTRA="
+set "RUN_CHECK=0"
 shift
 shift
 :collect
 if "%~1"=="" goto :run
+if /i "%~1"=="--check" (
+    set "RUN_CHECK=1"
+    shift
+    goto :collect
+)
+set "RUN_CHECK=1"
 set "EXTRA=%EXTRA% %~1"
 shift
 goto :collect
 
 :run
 echo.
-echo [1/2] 渲染  %BRIEF%  ^-^>  %OUT%
+echo [1/1] 生成 PPTX  %BRIEF%  ^-^>  %OUT%
 "%VPY%" "tools\deck_engine.py" "%BRIEF%" "%OUT%"
 set RENDER=%errorlevel%
 if not "%RENDER%"=="0" (
@@ -73,8 +81,10 @@ if not "%RENDER%"=="0" (
     exit /b %RENDER%
 )
 
+if "%RUN_CHECK%"=="0" goto :done
+
 echo.
-echo [2/2] 几何检查...
+echo [可选] 几何检查...
 "%VPY%" "tools\deck_lint.py" "%OUT%" %EXTRA%
 set LINT=%errorlevel%
 echo.
@@ -89,15 +99,25 @@ if "%LINT%"=="0" (
     echo ============================================================
 ) else (
     echo ============================================================
-    echo   文件已生成，但检查工具没跑起来（退出码 %LINT%）。
-    echo   首选渲染器 Microsoft PowerPoint 不可用，兜底也没跑通。
-    echo   先装 PowerPoint，再双击 setup.bat 复检；具体原因看：
-    echo     python tools\doctor.py
+    echo   文件已生成，但可选检查工具没跑起来（退出码 %LINT%）。
+    echo   PDF 检查依赖与系统渲染器可能需要额外配置。
+    echo   如要启用：setup.bat --with-pdf-check
+    echo   然后查看：.venv\Scripts\python.exe tools\doctor.py --pdf
     echo ============================================================
 )
 echo.
 pause
 exit /b %LINT%
+
+:done
+echo.
+echo ============================================================
+echo   PPTX 已生成：%OUT%
+echo   默认不运行 PDF 几何检查；如需要请附加 --check。
+echo ============================================================
+echo.
+pause
+exit /b 0
 
 :list
 echo.
@@ -114,6 +134,7 @@ echo.
 echo 用法：
 echo   make-ppt.bat tools\briefs\01-chenghai-zhaoyiming.json 输出.pptx
 echo   make-ppt.bat --list        列出现有用例
-echo   make-ppt.bat b.json o.pptx --png preview\    顺带导出逐页图
+echo   make-ppt.bat b.json o.pptx --check            运行可选几何检查
+echo   make-ppt.bat b.json o.pptx --png preview\    检查并导出逐页图
 echo.
 exit /b 0

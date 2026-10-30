@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""交付前几何检查：把「导出图用眼睛看」换成一条命令。
+"""可选几何检查：把「导出图用眼睛看」换成一条命令。
 
 用法：
     python deck_lint.py 输出.pptx [--tol 5] [--png 目录] [--keep]
@@ -15,9 +15,8 @@
 → LibreOffice（冷启动较慢）→ WPS COM（放最后：兼容 COM 接口，
 但渲染细节与真实 PowerPoint 差异最大）。用哪个会回显在输出第一行。
 
-PowerPoint 是首选而不是「三选一之一」：它的断行与行距就是客户打开文件时看到的
-那一个，另外两个只是让几何检查不至于跑不了的兜底。所以没用上 PowerPoint 时会
-多打一行提示，让用户装完 PowerPoint 重跑 setup.bat。
+PowerPoint 是首选渲染器，LibreOffice / WPS 可兜底。未使用 PowerPoint 时会提示
+本次检查采用的基准；安装或配置任何渲染器都不是生成 PPTX 的前提。
 
 注意：不同引擎的行高舍入不同，同一份稿子的 [提示] 项可能相差 ±1pt
 （例如「贴底色块下边 -1pt」）。[必改] 项在三种引擎下结论一致。
@@ -48,8 +47,9 @@ for _s in (sys.stdout, sys.stderr):
 try:
     import pymupdf
 except ImportError:
-    sys.stderr.write('缺 pymupdf。装完再跑：\n'
-                     '  python -m pip install pymupdf -i https://mirrors.aliyun.com/pypi/simple/\n')
+    sys.stderr.write('缺 PyMuPDF（可选 PDF 几何检查依赖）。\n'
+                     'Windows 克隆版可运行：setup.bat --with-pdf-check\n'
+                     '其他环境请在项目虚拟环境中安装 tools/requirements-pdf-check.txt。\n')
     sys.exit(2)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -124,22 +124,65 @@ def via_wps(pptx, out_dir):
     return pdf, 'WPS'
 
 
+def lo_profile_dir():
+    """给 soffice 用的隔离 profile 目录，建在项目内（优先 .venv）。
+
+    不能放 %TEMP%：本机实测父进程能 makedirs 成功，但**往里写文件报
+    PermissionError**——%TEMP% 的 ACL 被沙箱收走了。soffice 在其下建
+    profile 一样写不进，等于隔离配置从未生效。项目目录权限随项目走，
+    父子进程都能写，是这台机器上实测可用的落点。
+    """
+    base = os.path.join(os.path.dirname(HERE), '.venv')
+    if not os.path.isdir(base):
+        base = HERE
+    d = os.path.join(base, 'lo-profile-tmp')
+    os.makedirs(d, exist_ok=True)
+    return d
+
+
+def mkworkdir(prefix):
+    """在项目内建临时目录。理由同 lo_profile_dir：%TEMP% 不可写。
+
+    找不到可写落点时退回系统临时目录，保证换台机器也不会直接崩。
+    """
+    for base in (os.path.join(os.path.dirname(HERE), '.venv'), HERE):
+        if os.path.isdir(base):
+            try:
+                return tempfile.mkdtemp(prefix=prefix, dir=base)
+            except OSError:
+                continue
+    return tempfile.mkdtemp(prefix=prefix)
+
+
 def via_soffice(pptx, out_dir):
     soffice = find_soffice()
     if not soffice:
         raise RuntimeError('找不到 LibreOffice（soffice）')
-    # 用隔离的临时用户配置：默认配置里的 bundled 扩展同步一旦损坏，
+    # 用隔离的用户配置：默认配置里的 bundled 扩展同步一旦损坏，
     # soffice 会弹「Fatal Error: Failed to updatefile ...lastsynchronized」
     # 并拒绝启动。换空配置即可绕开，且不污染用户自己的 LibreOffice 设置。
-    profile = tempfile.mkdtemp(prefix='decklint-lo-')
+    profile = lo_profile_dir()
+    # 关键：把 TMP/TEMP 一起指到 profile 下。
+    # 本机实测：soffice 在沙箱子进程里被降到 Low Mandatory Level（S-1-16-4096），
+    # 而 %TEMP% 不可写。它启动时要在 TMP 里落临时 ELF/HSAIL 文件，写不进就
+    # 报「Failed to open temporary file for elf image」，随后 impl_store 失败
+    # （0x507 Access Code:7），约 50 秒后以 0xC0000142 退出。
+    # 不重定向 TMP 的话，换 profile、调 -env: 位置都救不回来——实测三种组合全败。
+    env = dict(os.environ)
+    for k in ('TMP', 'TEMP', 'TMPDIR'):
+        env[k] = profile
     try:
-        # 不用 check=True：实测 soffice 会先把 PDF 写出来，再在退出阶段崩掉
-        # （退出码 0xC0000409，日志里是 HSAIL 编译失败）。按退出码判会把
-        # 已经转好的文件当失败。只认产物在不在，崩溃细节留到真失败时再报。
-        proc = subprocess.run([soffice, '--headless', '--norestore', '--nolockcheck', '--nodefault',
+        # -env:UserInstallation 是全局开关，排在 --headless 之后时 soffice 直接
+        # 返回 0xC0000142，profile 目录都不会创建。位置必须最前。
+        #
+        # 不用 check=True：实测 soffice 会先把 PDF 写出来，再在退出阶段崩掉。
+        # 按退出码判会把已经转好的文件当失败。只认产物在不在。
+        proc = subprocess.run([soffice,
                                '-env:UserInstallation=file:///' + profile.replace('\\', '/'),
+                               '--headless', '--norestore', '--nolockcheck', '--nodefault',
                                '--convert-to', 'pdf', '--outdir', out_dir, pptx],
-                              capture_output=True, text=True, errors='replace', timeout=300)
+                              capture_output=True, text=True, errors='replace',
+                              timeout=300, env=env)
     finally:
         shutil.rmtree(profile, ignore_errors=True)
     pdf = os.path.join(out_dir, os.path.splitext(os.path.basename(pptx))[0] + '.pdf')
@@ -302,7 +345,7 @@ def main(argv):
     png_dir = argv[argv.index('--png') + 1] if '--png' in argv else None
     keep = '--keep' in argv
     prefer = argv[argv.index('--engine') + 1] if '--engine' in argv else None
-    tmp = tempfile.mkdtemp(prefix='decklint-')
+    tmp = mkworkdir('decklint-')
 
     pptx = src
     if src.lower().endswith('.json'):
@@ -316,15 +359,14 @@ def main(argv):
         pdf, engine = to_pdf(pptx, tmp, prefer)
     except Exception as exc:
         sys.stderr.write('转 PDF 失败：%s\n' % exc)
-        sys.stderr.write('几何检查没有可信基准，这一层只能跳过——出稿本身不受影响。\n'
-                         '装 Microsoft PowerPoint 后重跑 setup.bat，再跑本命令。\n')
+        sys.stderr.write('几何检查没有可用的 PDF 渲染环境，这一层只能跳过——出稿本身不受影响。\n'
+                         '需要检查时，可运行 setup.bat --with-pdf-check 并配置系统渲染器。\n')
         return 3
     # 回显渲染器：不同引擎的断行与行高舍入不同，[提示] 项可能相差 ±1pt，
     # 让人知道这次结论是拿哪个基准算出来的。
     print('渲染器：%s' % engine)
     if engine != 'PowerPoint':
-        print('提示：本次基准不是 PowerPoint。装 Microsoft PowerPoint 后重跑 setup.bat，'
-              '几何检查的结论才与你在 PowerPoint 里看到的完全一致。')
+        print('提示：本次基准不是 PowerPoint；渲染结果可能与 PowerPoint 中略有差异。')
 
     doc = pymupdf.open(pdf)
     fatal, hints = [], []

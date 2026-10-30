@@ -11,7 +11,7 @@
 | [architecture-map.md](./architecture-map.md) | 产品目的、主流程、能力模块、数据边界、文件边界 | 现行 |
 | [capability-index.md](./capability-index.md) | 能力清单、成熟度状态、对应样例、条目编写约定 | 现行 |
 | [verification-guide.md](./verification-guide.md) | 验收场景、交付前检查、闸门退化形态、文档变更验证方式 | 现行 |
-| [decisions/](./decisions/) | 决策记录，一主题一文件，编号连续 | 17 份 |
+| [decisions/](./decisions/) | 决策记录，一主题一文件，编号连续 | 18 份 |
 
 ## 决策记录
 
@@ -28,7 +28,7 @@
 | [0007](./decisions/0007-runtime-retrieval.md) | 技能是运行时流程，不是静态知识库 | 已采纳 |
 | [0008](./decisions/0008-offline-degradation.md) | 没有联网时的降级规则 | 已采纳 |
 | [0009](./decisions/0009-franchise-h2-and-budget.md) | 加盟类：预算按必查项算，H2 走净现金流 | 已采纳（修订 0007 的预算口径） |
-| [0010](./decisions/0010-deck-engine.md) | 版式引擎：只排版不判断，三级降级 | 已采纳 |
+| [0010](./decisions/0010-deck-engine.md) | 版式引擎：只排版不判断，三级降级 | 已采纳（依赖口径由 0018 修订） |
 | [0011](./decisions/0011-h1-channel-quantity.md) | H1：渠道不能单独充数，至少 3 个要说清背后客户量 | 已采纳 |
 | [0012](./decisions/0012-industry-taxonomy.md) | 行业分类：以国标门类为骨架，不为行业建原型 | 已采纳 |
 | [0013](./decisions/0013-skill-distribution.md) | 分发形态：仓库不是安装单元，产物在 `dist/startup-guide/` | 已采纳 |
@@ -36,6 +36,7 @@
 | [0015](./decisions/0015-search-fallback-in-flat.md) | 检索兜底进单文件：先判「没工具」，再判「没网」 | 已采纳（补齐 0008 的入口） |
 | [0016](./decisions/0016-endpoint-pools.md) | 端点不排顺序：国内 / 境外两份候选池，基线定判据，由智能体现场判断 | 已采纳（修订 0015 的固定顺序） |
 | [0017](./decisions/0017-doc-size-cap.md) | 文档硬上限 24 KB → 32 KB：阈值从「防过大」退化成「逼拆分」 | 已采纳（修订 0005 的体积一项） |
+| [0018](./decisions/0018-pdf-check-optional.md) | PDF 几何检查降为可选层：验证手段不是交付前提 | 已采纳（修订 0010 的依赖口径） |
 
 ## 新增约定
 

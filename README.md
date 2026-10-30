@@ -34,7 +34,7 @@
 可安装：仓库不是安装单元，`dist/startup-guide/` 才是。它已入库，克隆即可用，不必先装 Python；改了源文件才需要重建。
 
 ```bash
-python tools/build_skill.py     # 重建 dist/startup-guide/（75 个文件，约 504 KB）
+python tools/build_skill.py     # 重建 dist/startup-guide/（78 个文件，约 544 KB）
 python tools/build_flat.py      # 重建单文件形态 dist/startup-guide.flat.txt
 python tools/skill_check.py     # 校验规范、体积、死链、阈值一致性与产物是否过期
 ```
@@ -78,14 +78,14 @@ python tools/skill_check.py     # 校验规范、体积、死链、阈值一致�
 
 ## 部署（要出 PPT 才需要）
 
-双击项目根目录的 **`setup.bat`**。不需要联网，也不需要先配 Python 环境：
+双击项目根目录的 **`setup.bat`**。通常可离线部署；若本地 wheel 与 Python 版本不兼容，脚本会提示并联网重试：
 
 ```text
 setup.bat  →  找 Python → 建 .venv → 离线装依赖 → 冒烟测试 → 环境体检
 make-ppt.bat tools\briefs\01-chenghai-zhaoyiming.json 输出.pptx
 ```
 
-依赖 wheel 已随仓库提供（`tools/wheels/`，27.2 MB），所以克隆即可离线部署。必需项：Python 3.9+、python-pptx、PyMuPDF，以及一个 PDF 渲染器兜底（LibreOffice / WPS 任选其一）；缺一项 `setup.bat` 会明确说缺什么并停下，不会静默降级。**PowerPoint 单独判：它是几何检查的首选渲染器，没装不拦出稿，但体检结论会点名让你装完重跑 `setup.bat`。**
+依赖 wheel 已随仓库提供（`tools/wheels/`，27.2 MB），所以克隆即可离线部署。基础出稿只需要 Python 3.9+ 和 python-pptx；默认 `setup.bat` 不安装 PDF 检查依赖。PDF 转换与几何检查环境配置可能比较繁琐，默认建议跳过；用户明确需要时运行 `setup.bat --with-pdf-check`，再用 `python tools/doctor.py --pdf` 实测。PowerPoint、LibreOffice、WPS 需另行安装，不影响 PPTX 出稿。
 
 细节与踩过的坑见 [tools/README.md](./tools/README.md)。
 

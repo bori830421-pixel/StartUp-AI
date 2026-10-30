@@ -5,7 +5,7 @@
 - [它解决什么问题](#它解决什么问题)
 - [装](#装)
 - [用](#用)
-- [交付前几何检查](#交付前几何检查)
+- [可选几何检查](#可选几何检查)
 - [文件](#文件)
 - [部署踩过的坑](#部署踩过的坑)
 - [自检能查什么](#自检能查什么)
@@ -21,23 +21,26 @@
 
 ## 装
 
-**双击项目根目录的 `setup.bat` 就行**，不需要联网，也不需要先装 Python 包。
+**双击项目根目录的 `setup.bat` 就行**，通常不需要联网，也不需要先装 Python 包。
 
-它会：找一个可用的 Python（3.9+）→ 在项目根目录建 `.venv`（不动系统 Python）→ 从 `tools/wheels/` 离线装依赖 → 出 3 页 pptx 做冒烟测试 → 跑环境体检。全部通过才说「可以出 PPT 了」。
+默认模式只找 Python（3.9+）、在项目根目录建 `.venv`、优先从 wheel 离线安装生成 PPTX 必需的 `python-pptx`，再出 3 页 pptx 做冒烟测试。若本地 wheel 与当前 Python 版本不兼容，会明确提示并联网重试。PDF 转换与几何检查是可选能力，配置可能比较繁琐，默认建议不要安装。
+
+用户明确需要几何检查时才运行 `setup.bat --with-pdf-check`。这会额外安装 PyMuPDF 与 comtypes，但**不会安装** PowerPoint、LibreOffice 或 WPS；系统渲染器需另行安装。实际转换测试用 `doctor.py --pdf` 显式触发。
 
 装完检查环境：
 
 ```bash
-python tools/doctor.py        # 逐项列出必需/告警，结论直说能不能出稿
+python tools/doctor.py        # 快速检查生成 PPTX 的基础环境
+python tools/doctor.py --pdf  # 按需实测 PDF 几何检查环境，可能较慢
 ```
 
-必需项缺一个就不能出：Python、python-pptx、PyMuPDF、**PDF 渲染器兜底（LibreOffice / WPS 任选其一）**。字体只告警，不影响出稿。
+只有 Python（.venv）和 python-pptx 是出 PPTX 的必需项。PyMuPDF、comtypes 与 PDF 渲染器只影响可选检查，不影响生成 PPTX。
 
 ### 渲染器：PowerPoint 首选，另外两个兜底
 
 几何检查要把 pptx 转成 PDF 才能读到真实断行。**PowerPoint 是首选**——它渲染出来的断行与行距，就是客户双击文件时看到的那一个；LibreOffice 与 WPS 只是「让几何检查跑得起来」的兜底，基准不同，结论会偏。
 
-所以 `doctor.py` 把 PowerPoint 单列一行，装没装按事实判，不靠 COM 能不能调通：WPS 会注册同名 ProgID `PowerPoint.Application`，`Name` 还自称 "Microsoft PowerPoint"，只有 `Path` 指向 `...\Kingsoft\WPS Office\...` 才露馅（本机实测如此）。只探 COM 会把 WPS 当成 PowerPoint，于是永远不提示安装。**没装时结论区单独给一段安装指引，明确让用户装完重跑 `setup.bat`。**
+启用 `doctor.py --pdf` 后才会检测渲染器并真实转换一次。PowerPoint 是首选，LibreOffice / WPS 可兜底；缺少 PowerPoint 不影响出稿，也不会要求用户安装。WPS 会注册同名 ProgID `PowerPoint.Application`，所以检测 PowerPoint 时仍按本体路径判定，不只看 COM 注册。
 
 耗时一栏是在一台 Windows 机器上的参考值，**换个环境会差很多**（机械硬盘、杀毒软件、Office 版本都会影响）：
 
@@ -49,7 +52,7 @@ python tools/doctor.py        # 逐项列出必需/告警，结论直说能不�
 
 一台 Windows 机器上的实测稳定态（已预热，11 页）：PowerPoint 4–5 秒、WPS 3.8 秒、LibreOffice 47 秒。首次运行会明显更慢——PowerPoint 的 COM 冷启动尤其如此，别拿第一次的耗时当基准。
 
-兜底两个也都没有时，出稿照常，但几何检查跑不了。这不是错误配置，是环境差异——`doctor.py` 把这个情况标成必需项缺失并给出安装指引，是否安装由用户决定。
+没有可用渲染器时，出稿照常，只跳过几何检查。是否配置这套环境由用户决定。
 
 用 `--engine` 可强制指定：
 
@@ -57,7 +60,7 @@ python tools/doctor.py        # 逐项列出必需/告警，结论直说能不�
 python tools/deck_lint.py 输出.pptx --engine PowerPoint
 ```
 
-每次运行会在第一行回显实际用了哪个渲染器；没用上 PowerPoint 时多打一行提示，让用户装完重跑 `setup.bat`。
+每次运行会在第一行回显实际用了哪个渲染器；检查用的基准不同，结果也可能有差异。
 
 > **换引擎等于换基准。** 三种引擎的行高舍入不同，同一份稿子的 `[提示]` 项可能相差 ±1pt（例如「贴底色块下边 -1pt」在 LibreOffice 下报、在 PowerPoint 下不报）。`[必改]` 项在三种引擎下结论一致——那才是卡交付的条件。
 
@@ -67,25 +70,26 @@ python tools/deck_lint.py 输出.pptx --engine PowerPoint
 
 ### 依赖版本（固定）
 
-见 `tools/requirements.txt`。两个必须说明的锁：
+默认依赖见 `tools/requirements.txt`；可选检查依赖见 `tools/requirements-pdf-check.txt`。两个必须说明的锁：
 
-- `PyMuPDF` 锁 `1.24.x`：2.x 会连带拉 onnxruntime / numpy / pymupdf4llm，体积从 15.5 MB 涨到 100 MB。
-- `comtypes` 必须装：只有 292 KB，但它决定了能不能走 PowerPoint / WPS 渲染（通常远快于 LibreOffice 冷启动），同时是 `--png` 导图的前提。
+- `PyMuPDF` 锁 `1.24.x`：2.x 会连带拉 onnxruntime / numpy / pymupdf4llm，体积从 15.5 MB 涨到 100 MB。只有选择几何检查时才安装。
+- `comtypes` 只有 292 KB，是 Windows 下 PowerPoint / WPS 渲染和 `--png` 导图的可选依赖。
 
 `tools/wheels/` 里是这 7 个 wheel（27.2 MB），入库，所以克隆即可离线部署。
 
 ## 用
 
 ```bash
-make-ppt.bat tools\briefs\01-chenghai-zhaoyiming.json 输出.pptx     # 渲染 + 几何检查
-make-ppt.bat --list                                            # 列现成用例
+make-ppt.bat tools\briefs\01-chenghai-zhaoyiming.json 输出.pptx       # 默认只生成 PPTX
+make-ppt.bat tools\briefs\01-chenghai-zhaoyiming.json 输出.pptx --check # 按需几何检查
+make-ppt.bat --list                                                  # 列现成用例
 ```
 
 也可以直接调脚本（先确保用 `.venv` 里的解释器）：
 
 ```bash
 .venv\Scripts\python.exe tools\deck_engine.py tools/briefs/01-chenghai-zhaoyiming.json 输出.pptx
-python tools/deck_lint.py 输出.pptx --png preview/             # 已渲染的稿子，顺带导图
+python tools/deck_lint.py 输出.pptx --png preview/                  # 手动运行可选检查并导图
 ```
 
 - `--png`：Windows 下用 COM 导出逐页图片，用于目视复核（失败只告警，不影响出文件）
@@ -93,7 +97,7 @@ python tools/deck_lint.py 输出.pptx --png preview/             # 已渲染的�
 
 退出码：`0` 正常 / `2` 缺依赖 / `3` brief 结构错误 / `4` 渲染失败。
 
-## 交付前几何检查
+## 可选几何检查
 
 `deck_engine` 的自检只比对文字框自身的估高与框高，**管不到「文字框 vs 它背后的色块」，也管不到渲染器实际怎么断行**。这两类问题过去只能靠「转 PDF → 转 PNG → 逐页看图」，一轮 50 秒。
 
@@ -117,7 +121,7 @@ python deck_lint.py 输出.pptx --png out/  # 顺手导出逐页图，供人工�
 
 `--tol` 调越界容差（默认 5pt）。退出码 `0` 干净 / `1` 有必改项，可以串进脚本。
 
-依赖一个 PDF 渲染器转 PDF（PowerPoint 优先，LibreOffice / WPS 兜底），一种都没有会直接报错，不会假装通过。
+依赖 PyMuPDF 和一个 PDF 渲染器（PowerPoint 优先，LibreOffice / WPS 兜底）。普通出稿不调用它；用户选择检查但转换不可用时，PPTX 仍已生成。
 
 ## 文件
 
@@ -135,8 +139,9 @@ python deck_lint.py 输出.pptx --png out/  # 顺手导出逐页图，供人工�
 | `mcp_server.py` | MCP 服务端（stdio JSON-RPC，纯标准库不装 SDK）：5 个只读工具 + 全量 resources + `checkup` prompt；阈值全读 `data/params.json`，工具里不含判断。`--selftest` 断言，`--list` 看暴露面 | 300 |
 | `mcp_tools.py` | MCP 的工具层：五个只读工具与 `TOOLS` 表。只算数不下判断；拆出来是为了守住单文件 400 行上限 | 300 |
 | `bootstrap.py` | 部署：建 `.venv`、离线装 wheel、冒烟测试 | 300 |
-| `doctor.py` | 环境体检：必需/告警分级；PowerPoint 单列一行，缺了给安装指引并让用户重跑 setup.bat；兜底渲染器全无才判不能出稿 | 300 |
-| `requirements.txt` | 固定版本清单，给想联网装同一套的人用 | — |
+| `doctor.py` | 环境体检：默认只检查 PPTX 基础环境；`--pdf` 才实测可选转换 | 300 |
+| `requirements.txt` | 生成 PPTX 的基础依赖 | — |
+| `requirements-pdf-check.txt` | 可选 PDF 几何检查依赖 | — |
 | `wheels/*.whl` | 离线依赖源，7 个文件 27.2 MB，入库 | — |
 | `briefs/*.json` | 内容。新增一份就是一个新演示文稿 | — |
 
@@ -149,6 +154,8 @@ python tools/doc_check.py --verbose    # 附带体积排行
 
 它替代原来那条 `find ... -exec wc -lc`——那条在 Windows 上不可用，导致「本文导航」「锚点」两项检查长期没人真正跑过。首次接入时它当场查出 8 个此前漏掉的文件（6 个缺导航、2 个导航与标题不一致）。
 
+扫描范围排除隐藏目录，以及 `decklint-*`、`ar_pptx_*`、`doctor-probe-*` 这些工具临时目录。原因是一次异常退出留下的 `text.md` 有 200 多行，会被报成「缺本文导航」——把工具残骸当成文档缺陷，门禁就失去意义了。
+
 ## 部署踩过的坑
 
 下面两条是 **Windows 平台的通用行为**，不是某台机器的特殊现象，任何中文 Windows 上都会遇到：
@@ -158,15 +165,15 @@ python tools/doc_check.py --verbose    # 附带体积排行
 | `.bat` 存成 UTF-8 无 BOM | cmd.exe 按系统 ANSI 码页（中文 Windows 是 936）解析，把 `set PYTHONIOENCODING` 吃掉首字母，报 `'ONIOENCODING' is not recognized` | 存成 **UTF-8 with BOM**，并在开头 `chcp 65001` |
 | 用 `errorlevel` 判断 `py -3.12` 是否存在 | 版本不存在时 `py` 只往 stderr 报错、**退出码仍是 0**，导致误选到下一个版本 | 用 `for /f` 捕获它打印的版本号，只有打出来的值等于请求版本才算找到 |
 | 冒烟测试把临时 PPTX 写进系统 `%TEMP%` 时遭到 Windows 权限拒绝 | 依赖安装成功，但生成 PPTX 的子进程在系统临时目录写入失败 | 冒烟文件放在本项目 `.venv` 下的临时目录；部署刚创建并验证过该目录 |
-| `setup.bat` 在脚本或后台里跑会「卡住」 | 长时间没有任何输出，看起来像装到一半死了。实际部署 17 秒就完成，卡住的是结尾那行 `pause`——它等键盘输入，非交互环境永远等不到 | 非交互调用时把标准输入接空：`cmd /c setup.bat < /dev/null`（Windows 原生可写 `echo.| setup.bat`）。双击运行不受影响，`pause` 是留给人看结果的 |
+| `setup.bat` 在脚本或后台里运行需要等依赖安装 | Python 环境建立与 wheel 安装需要时间，PDF 检查模式还会多装依赖 | 默认模式只装基础依赖；setup 结束不等待键盘输入。PDF 检查需用户明确选择 `--with-pdf-check` |
 
 这条依赖机器上装了什么，**不保证任何环境都有**：
 
 | 依赖 | 缺了会怎样 | 怎么处理 |
 | --- | --- | --- |
-| PowerPoint / WPS / LibreOffice | 几何检查转不了 PDF（缺 PowerPoint 只降基准，另两个全无才转不了） | PowerPoint 首选，缺了 `doctor.py` 会提示装完重跑 `setup.bat`；兜底见「装」一节的渲染器表 |
-| 微软雅黑字体 | 用替代字体，版式可能偏移 | 只告警，不拦出稿 |
-| comtypes | `--png` 导图不可用 | 已随 wheels 安装，正常都有 |
+| PyMuPDF、PowerPoint / WPS / LibreOffice | 几何检查无法转 PDF 或读取坐标 | 仅在用户需要检查时配置；用 `doctor.py --pdf` 实测 |
+| 微软雅黑字体 | 用替代字体，版式可能偏移 | 只提示，不拦出稿 |
+| comtypes | Windows 下 PowerPoint / WPS 检查与 `--png` 导图不可用 | 属可选依赖；用 `setup.bat --with-pdf-check` 安装 |
 
 另外，中文提示全部由 Python 打印（Python 侧 `sys.stdout.reconfigure(encoding='utf-8')`），`deck_engine.py` 与 `deck_lint.py` 都在缺依赖提示**之前**加了这段，否则连「缺 python-pptx」那条本身都是乱码。
 
@@ -177,6 +184,7 @@ python tools/doc_check.py --verbose    # 附带体积排行
 | --- | --- | --- |
 | `01-chenghai-zhaoyiming.json` | 加盟测算，11 页 | 主回归基准，数字已核 |
 | `02-park-kite.json` | 公园摆摊卖风筝，9 页 | 覆盖度测试：结构完全不同的场景能否零改代码出图。**数字为示意，只作写法参考，不可当数据引用** |
+| `03-pindou-checkup.json` | 拼豆店自营测算，11 页 | 常熟 · 20 万自营拼豆店体检，数字为 2026-10-30 实测与估算口径 |
 | `_stress.json` | 故意超载的 4 页 | 压力用例：8 行表格 + 补注、`max` 设小的条形图、5 张卡、5 步时间线。改几何后跑一遍，确认不会画到页外 |
 
 新增页型：在 `deck_layouts.py` 复制最接近的一个，改几何、改字段，登记进 `LAYOUTS`。**不要在页型里写业务判断**，判断属于 brief 之前的那一步。

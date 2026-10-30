@@ -69,6 +69,8 @@
 
 ## 渲染
 
+普通交付默认只生成 PPTX，不需要转 PDF。下面的 PNG 导出用于本样例的可视检查；它是可选能力，环境配置可能较繁琐。
+
 ```bash
 cd tools
 python deck_engine.py briefs/01-chenghai-zhaoyiming.json 澄海赵一鸣加盟测算.pptx --png preview/

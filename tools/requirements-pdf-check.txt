@@ -1,0 +1,4 @@
+# 可选依赖：PDF 几何检查与 Windows COM 导图。
+# 安装不包含 PowerPoint、LibreOffice 或 WPS；这些渲染器需另行安装。
+PyMuPDF==1.24.14
+comtypes==1.4.17

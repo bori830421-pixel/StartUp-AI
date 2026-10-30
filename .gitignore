@@ -14,6 +14,15 @@ Thumbs.db
 # 渲染产物：brief.json 才是源，pptx 由 tools/deck_engine.py 重跑即可
 *.pptx
 .tmp-deckcheck/
+.tmp-preview/
+
+# 工具运行产物：deck_lint / doctor / 预览各建一个临时工作目录，跑完自行清理。
+# 异常退出会留下残骸，不忽略就会混进 git status，并被 doc_check 当成文档扫描。
+decklint-*/
+ar_pptx_*/
+doctor-probe-*/
+.preview/
+.backup/
 
 # 部署产物：setup.bat 生成，不入库（tools/wheels/ 才入库，那是离线依赖源）
 .venv/

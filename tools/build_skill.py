@@ -29,6 +29,7 @@ TOOL_FILES = (
     "mcp_server.py",
     "mcp_tools.py",
     "requirements.txt",
+    "requirements-pdf-check.txt",
 )
 TOOL_GLOBS = {"briefs": "*.json"}
 FORBIDDEN = (
