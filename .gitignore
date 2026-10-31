@@ -10,6 +10,7 @@ Thumbs.db
 # 本地记忆与临时文件
 .workbuddy-ai/
 .workbuddy/
+.zcode/
 
 # 渲染产物：brief.json 才是源，pptx 由 tools/deck_engine.py 重跑即可
 *.pptx

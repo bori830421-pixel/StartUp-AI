@@ -13,7 +13,7 @@
 | [expansion-roadmap.md](./expansion-roadmap.md) | 从通用框架到任务级创业陪跑的分阶段推进路线 | 现行 |
 | [module-review-checklist.md](./module-review-checklist.md) | 行业、平台与任务模块的手工审核、来源复核和样例回归清单 | 现行；手工流程，无自动化工具 |
 | [verification-guide.md](./verification-guide.md) | 验收场景、交付前检查、闸门退化形态、文档变更验证方式 | 现行 |
-| [decisions/](./decisions/) | 决策记录，一主题一文件，编号连续 | 21 份 |
+| [decisions/](./decisions/) | 决策记录，一主题一文件，编号连续 | 25 份 |
 
 ## 决策记录
 
@@ -28,7 +28,7 @@
 | [0005](./decisions/0005-file-size-and-navigation.md) | 文件规模与导航索引 | 已采纳（体积上限由 0017 修订） |
 | [0006](./decisions/0006-archetype-layer.md) | 按原型分类，不按行业分类 | 已采纳 |
 | [0007](./decisions/0007-runtime-retrieval.md) | 技能是运行时流程，不是静态知识库 | 已采纳 |
-| [0008](./decisions/0008-offline-degradation.md) | 没有联网时的降级规则 | 已采纳 |
+| [0008](./decisions/0008-offline-degradation.md) | 没有联网时的降级规则 | 已采纳（临时立场口径由 0022 修订） |
 | [0009](./decisions/0009-franchise-h2-and-budget.md) | 加盟类：预算按必查项算，H2 走净现金流 | 已采纳（修订 0007 的预算口径） |
 | [0010](./decisions/0010-deck-engine.md) | 版式引擎：只排版不判断，三级降级 | 已采纳（依赖口径由 0018 修订） |
 | [0011](./decisions/0011-h1-channel-quantity.md) | H1：渠道不能单独充数，至少 3 个要说清背后客户量 | 已采纳 |
@@ -42,6 +42,10 @@
 | [0019](./decisions/0019-flat-payload-budget.md) | 单文件体积由脚本现算，载荷只收运行时指令 | 已采纳（修订 0015 的体积口径） |
 | [0020](./decisions/0020-knowledge-layers-and-curation.md) | 知识分层、按需检索与审核式经验沉淀 | 已采纳；不含集中收集与服务器 |
 | [0021](./decisions/0021-smoke-criteria-guards.md) | 冒烟判据从「宁窄不宽」改为「带守卫的窄判据」 | 已采纳（修订验证指南的判据口径） |
+| [0022](./decisions/0022-missing-data-scenarios.md) | 缺失数据先检索和估算，再判局部门槛 | 已采纳 |
+| [0023](./decisions/0023-partnership-branch.md) | 合伙分支：正交第二轴，不开第八原型；开存量入口 | 已采纳 |
+| [0024](./decisions/0024-doc-line-cap-520.md) | 文档行数上限提到 520 行；同时禁止为用满上限而凑数 | 已采纳（修订 0005 行数项、0017 建议线） |
+| [0025](./decisions/0025-category-catalog.md) | 品类目录：封顶 11 类，插在门类与原型之间 | 已采纳 |
 
 ## 新增约定
 

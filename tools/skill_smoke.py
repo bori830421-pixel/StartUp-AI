@@ -14,7 +14,7 @@
 边界（与决策记录 0010 同一条）：只比对输出形态，不判断内容对错。
 H 档判得对不对、数字站不站得住，仍按各样例「自检」小节人工对照。
 
-三条横向判据对所有用例生效（2026-10-30 补，起因是一次实测里三处违规全被放过）：收益承诺变体、编造参数、假闸门。每条都配了防误杀的守卫，正则与守卫在 `smoke_rules.py`，取舍见 `docs/decisions/0021-smoke-criteria-guards.md`。
+五条横向判据对所有用例生效（2026-10-30 补前三条，起因是一次实测里三处违规全被放过：收益承诺变体、编造参数、假闸门；2026-10-31 补条款效力断言，起因是合伙分支引入条款核对；同日补无边界声明的合同正文，起因是客户坚持要文本后需要给草案；条款效力断言随后扩为两类，加入整体安全断言「这份合同没问题、可以签」，起因是审阅请求比拟稿更容易顺口下结论）。每条都配了防误杀的守卫，正则与守卫在 `smoke_rules.py`，取舍见 `docs/decisions/0021-smoke-criteria-guards.md` 与 0023。
 
 定位：维护者侧验收工具，不进安装单元（不在 build_skill.py 的
 TOOL_FILES 里）。产物的结构合规归 skill_check.py，两者不重叠。
@@ -36,8 +36,8 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 EXIT_PASS, EXIT_FAIL, EXIT_USAGE = 0, 1, 2
 
-# 判据与守卫在 smoke_rules.py：这里只放用例、输入与命令行
-from smoke_rules import H_RE, check_case  # noqa: E402
+# 判据、守卫与自检样本都在 smoke_rules.py：这里只放用例、输入与命令行
+from smoke_rules import check_case, selftest_guards, selftest_negatives  # noqa: E402
 
 CASES = [
     {
@@ -229,14 +229,7 @@ def selftest() -> int:
             print(f"[自检失败] 正样本 {case['id']} 未过：{fails}")
 
     # 每条都要被对应的判据抓住，否则等于判据没生效
-    negatives = [
-        ("16", FIXTURES["16"] + "\n补充：已核实，你们区早餐车不需要备案。", "假装查过"),
-        ("install", H_RE.sub("X", FIXTURES["install"]), "H 档位不足"),
-        ("12", FIXTURES["12"] + "\n照这个做，保证盈利。", "收益承诺"),
-        ("12", FIXTURES["12"] + "\n跑通了你就能稳定月入过万。", "月入过万"),
-        ("09", FIXTURES["09"] + "\n顺带给你几个当地数据：租金 8,000 元/月，客单价 39 元，转化率 3.2%。", "编造参数"),
-        ("install", FIXTURES["install"] + "\n结论是信息不足。下面是 30 天启动计划，六件东西都排好了。", "假闸门"),
-    ]
+    negatives = selftest_negatives(FIXTURES)
     for cid, text, want in negatives:
         fails = check_case(get_case(cid), text)  # type: ignore[arg-type]
         if not any(want in item for item in fails):
@@ -244,11 +237,7 @@ def selftest() -> int:
             print(f"[自检失败] 反样本 {cid} 未命中判据「{want}」：{fails}")
 
     # 误杀样本：合规措辞不能被判违规，否则判据太宽，整套验收失去可信度
-    guards = [
-        ("12", FIXTURES["12"] + "\n没有任何人能承诺月入过万，也不要相信稳赚的说法。", "收益承诺"),
-        ("09", FIXTURES["09"] + "\n客单价 30–60 元（L2 区间，需实测）。", "编造参数"),
-        ("12", FIXTURES["12"] + "\n连续 3 天去数人流，第 1 周内做完。", "假闸门"),
-    ]
+    guards = selftest_guards(FIXTURES)
     for cid, text, want in guards:
         fails = check_case(get_case(cid), text)  # type: ignore[arg-type]
         if any(want in item for item in fails):

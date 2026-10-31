@@ -2,7 +2,7 @@
 """文档结构自检：跨平台替代 find/wc 单行命令。
 
 判定四类缺陷（对应 AGENTS.md「文件规模与导航约束」）：
-  1. 越过硬上限：Markdown 300 行 / 32 KB，代码文件 400 行
+  1. 越过硬上限：Markdown 520 行 / 32 KB，代码文件 400 行
   2. 超过 120 行却没有「## 本文导航」
   3. 导航锚点对不上真实标题
   4. 相对链接失效
@@ -18,7 +18,7 @@ import os
 import re
 import sys
 
-MD_LINE_MAX, MD_BYTE_MAX = 300, 32 * 1024
+MD_LINE_MAX, MD_BYTE_MAX = 520, 32 * 1024
 CODE_LINE_MAX = 400
 NAV_REQUIRED_OVER = 120
 # .venv 是 setup.bat 装的第三方依赖，不是本项目的代码，必须跳过——

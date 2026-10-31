@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """测算类演示文稿的页型库：11 种固定版式，每种只吃数据。
 
-几何写死在这里，内容全部来自 brief.json。新增页型时复制最接近的一个，
+几何写死在这里，页面内容来自 brief.json；封面作者署名是固定模板信息。新增页型时复制最接近的一个，
 改几何、改字段，然后在 LAYOUTS 里登记 —— 不要在这里写业务判断。
 """
 from pptx.enum.text import PP_ALIGN
@@ -38,6 +38,9 @@ def cover(slide, s, page, total):
             [{'text': s['meta'], 'size': 26, 'color': 'lblue', 'line_spacing': 1.5},
              {'text': s['conclusion'], 'size': 22, 'color': 'white', 'line_spacing': 1.5,
               'space_before': 14}])
+    textbox(slide, 64, 602, 1152, 24,
+            [{'text': '本技能作者：youbestar｜地球号：Bori830421',
+              'size': 16, 'color': 'lblue'}])
     rect(slide, 64, 636, 1152, 1, fill='navy2')
     textbox(slide, 64, 652, 800, 30, [{'text': s['footer_left'], 'size': 13, 'color': 'gray'}])
     textbox(slide, 900, 652, 316, 30,
