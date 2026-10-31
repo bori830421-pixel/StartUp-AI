@@ -131,17 +131,27 @@ def main() -> int:
     fresh = build()
 
     if args.check:
+        out_rel = OUT.relative_to(REPO)
         if not OUT.is_file():
-            print(f"[必改] 缺 {OUT.relative_to(REPO)}，先跑 python tools/build_flat.py")
+            print(f"[必改] 缺 {out_rel}，先跑 python tools/build_flat.py")
             return 1
-        if OUT.read_text(encoding="utf-8") != fresh:
-            print(f"[必改] {OUT.relative_to(REPO)} 已过期（源文件改过），需重新生成")
+        # 逐字节比，不用 read_text：它会把 CRLF 归一化，行尾漂移就查不出来了
+        want, have = fresh.encode("utf-8"), OUT.read_bytes()
+        if have != want:
+            if have.replace(b"\r\n", b"\n") == want:
+                print(f"[必改] {out_rel} 行尾不是 LF（.gitattributes 要求 eol=lf），需重新生成")
+            else:
+                print(f"[必改] {out_rel} 已过期（源文件改过），需重新生成")
             return 1
-        print(f"[通过] {OUT.name} 与源文件一致")
+        print(f"[通过] {OUT.name} 与源文件逐字节一致")
         return 0
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(fresh, encoding="utf-8")
+    # 显式 newline="\n" 不可省：默认按平台翻译行尾，Windows 下会写出 CRLF，
+    # 而 .gitattributes 规定 *.txt 为 eol=lf，结果每跑一次构建工作区就多一处假脏。
+    # 用 open 而非 Path.write_text(newline=...)，因为后者要 Python 3.10+，本项目支持 3.9+。
+    with open(OUT, "w", encoding="utf-8", newline="\n") as fh:
+        fh.write(fresh)
     tokens = estimate_tokens(fresh)
     print(f"已生成 {OUT.relative_to(REPO)}：{len(fresh.splitlines())} 行，"
           f"{OUT.stat().st_size / 1024:.1f} KB，约 {tokens:,} token")
