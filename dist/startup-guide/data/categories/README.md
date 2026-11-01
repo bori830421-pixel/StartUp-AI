@@ -20,7 +20,7 @@
 | [08-franchise.md](./08-franchise.md) | 加盟连锁 | 无 | — |
 | [09-edu-leisure.md](./09-edu-leisure.md) | 教育与文体娱 | 少儿美术·门店（湖南口径） | 2026-11-01 |
 | [10-agri-processing.md](./10-agri-processing.md) | 涉农与食品加工 | 无 | — |
-| [11-rental-brokerage.md](./11-rental-brokerage.md) | 租赁与中介 | 无 | — |
+| [11-rental-brokerage.md](./11-rental-brokerage.md) | 租赁与中介 | 收房转租·小规模（全国法规口径） | 2026-11-01 |
 
 ## 使用方式
 
