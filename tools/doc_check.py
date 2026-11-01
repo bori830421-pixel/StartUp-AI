@@ -32,6 +32,11 @@ SKIP_DIRS = {"__pycache__", "node_modules", "venv", ".env", "wheels"}
 # 工具运行产物：deck_lint / doctor / 预览在项目内建临时目录（%TEMP% 在本机不可写）。
 # 异常退出会留下残骸，里面可能带 200+ 行的 text.md；不跳就会把运行残骸报成文档缺陷。
 SKIP_PREFIXES = ("decklint-", "ar_pptx_", "doctor-probe-")
+# 本地知识库（决策 0030）：不入库、不进 dist，总量按 10 倍放宽，单文件按 50 KB 放宽。
+# 但它仍是文档，导航与链接照查；只是体积口径不同，所以只跳过体积检查，不跳过整个目录。
+LOCAL_KB_DIR = "local-knowledge"
+LOCAL_MD_BYTE_MAX = 50 * 1024
+LOCAL_MD_LINE_MAX = 3500
 
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.*?)\s*$")
 LINK_RE = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
@@ -72,6 +77,13 @@ def walk(root: str):
 
 def check_size(rel: str, lines: int, size: int) -> list:
     if rel.endswith(".md"):
+        if rel.startswith(LOCAL_KB_DIR + "/"):
+            # 本地知识库：不进 dist、不入库，放宽到 50 KB / 3500 行（决策 0030）。
+            # 上限不是取消——单文件仍要小到一次能读完，超了按品类拆。
+            if lines > LOCAL_MD_LINE_MAX or size > LOCAL_MD_BYTE_MAX:
+                return [f"{rel}: 越过本地知识库上限（{lines} 行 / {size // 1024} KB，"
+                        f"上限 {LOCAL_MD_LINE_MAX} 行 / {LOCAL_MD_BYTE_MAX // 1024} KB）"]
+            return []
         if lines > MD_LINE_MAX or size > MD_BYTE_MAX:
             return [f"{rel}: 越过硬上限（{lines} 行 / {size // 1024} KB，上限 {MD_LINE_MAX} 行 / {MD_BYTE_MAX // 1024} KB）"]
     elif rel.endswith(".py") and lines > CODE_LINE_MAX:

@@ -9,6 +9,7 @@
 - [文件](#文件)
 - [部署踩过的坑](#部署踩过的坑)
 - [自检能查什么](#自检能查什么)
+- [规则指纹门禁](#规则指纹门禁)
 - [已知限制](#已知限制)
 
 把一份 JSON（brief）渲染成 16:9 的 `.pptx`。**几何写死，页面内容来自 brief；封面自动显示固定作者署名**——所以出图只要两秒，不用再调坐标。
@@ -131,12 +132,15 @@ python deck_lint.py 输出.pptx --png out/  # 顺手导出逐页图，供人工�
 | `deck_layouts.py` | 11 种页型，封面自动显示本技能作者署名 |
 | `deck_engine.py` | 命令行入口、自检、PNG 导出 |
 | `deck_lint.py` | 读 PDF 真实坐标做几何检查，出缺陷清单 |
-| `doc_check.py` | 文档结构自检：体积上限、本文导航、锚点、相对链接；纯标准库，跨平台 |
+| `doc_check.py` | 文档结构自检：体积上限、本文导航、锚点、相对链接；纯标准库，跨平台。`local-knowledge/` 用放宽口径（50 KB / 3500 行），导航与链接照查 |
+| `knowledge_sink.py` | 检索沉淀器：把一次真实检索的查询串、死路、结构性空缺写进 `local-knowledge/regions/`。默认按城市层级（一线/新一线/二线/三线及以下）归类，差异大的城市 `--solo` 单独成文件；`--find <城市>` 快速定位。不写金额与判断，目录不入库也不进安装单元（0030）。`--selftest` 跑 26 项结构断言 |
+| `knowledge_taxonomy.py` | 沉淀器的分类层：城市层级表、品类号归一、城市名归一（深圳市/深圳宝安→深圳）、路径解析。从 `knowledge_sink.py` 按职责拆出（0026 停手线），不含读写与渲染 |
 | `build_skill.py` | 构建可安装技能目录 `dist/startup-guide/`，剔除 `.venv` 与 wheels；安装清单见根目录 `INSTALL.md` |
 | `skill_check.py` | 校验安装产物：frontmatter 规范、目录名一致、体积、产物是否过期 |
+| `rule_lock_selftest.py` | 规则锁 11 项正反回归：基线、换行、篡改、删除、缺保护项、越界及损坏清单；只用临时目录，不重封真实规则 |
 | `skill_smoke.py` | 接入冒烟验收：打印 4 个验收输入（INSTALL 第 3 节与样例 09/12/16），校验宿主输出形态并以退出码给结论；五条横向判据（收益承诺变体 / 编造参数 / 假闸门 / 条款效力与整体安全断言 / 无边界声明的合同正文）各带守卫，`--selftest` 跑 4 正 11 反 9 误杀；只验形态不判内容，维护者侧工具不进安装单元 |
 | `smoke_rules.py` | 冒烟判据、守卫与自检样本：五条横向判据各配防误杀守卫，反样本与误杀样本同置一处。样本不另拆文件，是因为改判据时要同时看到会破坏哪些反例；本文件从主文件拆出，按职责分开判据与协议（0021、0023） |
-| `build_flat.py` | 生成 B 形态单文件 `dist/startup-guide.flat.txt`：SKILL.md 加 5 份关键 references（含检索兜底）机械合并，给只有对话框的宿主当系统提示；`--check` 拦过期产物，`.txt` 载荷不占文档行数口径。生成时打印 token 估算与 8k/32k/128k 占用；源文件里 `<!-- flat:skip -->` 圈住的维护者段落不进载荷（0019） |
+| `build_flat.py` | 生成 B 形态单文件 `dist/startup-guide.flat.txt`：SKILL.md 加 6 份关键 references（含检索兜底）机械合并，给只有对话框的宿主当系统提示；`--check` 拦过期产物，`.txt` 载荷不占文档行数口径。生成时打印 token 估算与 8k/32k/128k 占用；源文件里 `<!-- flat:skip -->` 圈住的维护者段落不进载荷（0019） |
 | `mcp_server.py` | MCP 服务端（stdio JSON-RPC，纯标准库不装 SDK）：5 个只读工具 + 递归暴露 `references/`、`data/`、`examples/`、`hosts/` resources + `checkup` prompt；阈值全读 `data/params.json`，工具里不含判断。`--selftest` 断言，`--list` 看暴露面 |
 | `mcp_tools.py` | MCP 的工具层：五个只读工具与 `TOOLS` 表。只算数不下判断；与协议层分开，边界落在「算」与「说」（0010、0014） |
 | `bootstrap.py` | 部署：建 `.venv`、离线装 wheel、冒烟测试 |
@@ -206,6 +210,12 @@ python tools/doc_check.py --verbose    # 附带体积排行
 自检**不判断好不好看**。标题是不是结论句、数字前后是否一致、假设有没有标注，仍然按 `references/deck-spec.md` 第 7 节人工过。
 
 自检的盲区交给 `deck_lint.py`：文字框与背后色块的关系、渲染器实际断行、行首标点，都由它从 PDF 坐标判定。两个工具的分工是——引擎管「声明对不对」，lint 管「画出来对不对」。
+
+## 规则指纹门禁
+
+`skill_check.py` 在检查分发物前核对 `docs/rule-lock.json` 的源文件指纹。公式、闸门、必算明细、保护清单和校验入口修改须先取得维护者对具体差异的明确同意；不能自行刷新指纹让检查变绿。无自动重封命令。`python tools/rule_lock_selftest.py` 用临时目录跑 11 项正反回归。指纹仅防误改，不能证明人工批准存在。
+
+`build_flat.py` 必须收录完整 `references/operating-model.md`；MCP 的 H2 固定情景返回值不替代逐月现金检查。历史 brief 仅作为排版夹具，财务结论未经新测算重建不得复用。
 
 ## 已知限制
 
