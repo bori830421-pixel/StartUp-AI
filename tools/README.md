@@ -125,26 +125,28 @@ python deck_lint.py 输出.pptx --png out/  # 顺手导出逐页图，供人工�
 
 ## 文件
 
-| 文件 | 职责 | 行数上限 |
-| --- | --- | --- |
-| `deck_kit.py` | 设计令牌、px/pt 换算、文本框/表格/面板等基础件 | 400 |
-| `deck_layouts.py` | 11 种页型，封面自动显示本技能作者署名 | 400 |
-| `deck_engine.py` | 命令行入口、自检、PNG 导出 | 200 |
-| `deck_lint.py` | 读 PDF 真实坐标做几何检查，出缺陷清单 | 250 |
-| `doc_check.py` | 文档结构自检：体积上限、本文导航、锚点、相对链接；纯标准库，跨平台 | 300 |
-| `build_skill.py` | 构建可安装技能目录 `dist/startup-guide/`，剔除 `.venv` 与 wheels；安装清单见根目录 `INSTALL.md` | 200 |
-| `skill_check.py` | 校验安装产物：frontmatter 规范、目录名一致、体积、产物是否过期 | 250 |
-| `skill_smoke.py` | 接入冒烟验收：打印 4 个验收输入（INSTALL 第 3 节与样例 09/12/16），校验宿主输出形态并以退出码给结论；五条横向判据（收益承诺变体 / 编造参数 / 假闸门 / 条款效力与整体安全断言 / 无边界声明的合同正文）各带守卫，`--selftest` 跑 4 正 11 反 9 误杀；只验形态不判内容，维护者侧工具不进安装单元 | 280 |
-| `smoke_rules.py` | 冒烟判据、守卫与自检样本：五条横向判据各配防误杀守卫，反样本与误杀样本同置一处。样本不另拆文件，是因为改判据时要同时看到会破坏哪些反例；本文件从主文件拆出，原本为守住 300 行上限（0021、0023） | 210 |
-| `build_flat.py` | 生成 B 形态单文件 `dist/startup-guide.flat.txt`：SKILL.md 加 5 份关键 references（含检索兜底）机械合并，给只有对话框的宿主当系统提示；`--check` 拦过期产物，`.txt` 载荷不占文档行数口径。生成时打印 token 估算与 8k/32k/128k 占用；源文件里 `<!-- flat:skip -->` 圈住的维护者段落不进载荷（0019） | 150 |
-| `mcp_server.py` | MCP 服务端（stdio JSON-RPC，纯标准库不装 SDK）：5 个只读工具 + 递归暴露 `references/`、`data/`、`examples/`、`hosts/` resources + `checkup` prompt；阈值全读 `data/params.json`，工具里不含判断。`--selftest` 断言，`--list` 看暴露面 | 300 |
-| `mcp_tools.py` | MCP 的工具层：五个只读工具与 `TOOLS` 表。只算数不下判断；拆出来是为了守住单文件 400 行上限 | 300 |
-| `bootstrap.py` | 部署：建 `.venv`、离线装 wheel、冒烟测试 | 300 |
-| `doctor.py` | 环境体检：默认只检查 PPTX 基础环境；`--pdf` 才实测可选转换 | 300 |
-| `requirements.txt` | 生成 PPTX 的基础依赖 | — |
-| `requirements-pdf-check.txt` | 可选 PDF 几何检查依赖 | — |
-| `wheels/*.whl` | 离线依赖源，7 个文件 27.2 MB，入库 | — |
-| `briefs/*.json` | 内容。新增一份就是一个新演示文稿 | — |
+| 文件 | 职责 |
+| --- | --- |
+| `deck_kit.py` | 设计令牌、px/pt 换算、文本框/表格/面板等基础件 |
+| `deck_layouts.py` | 11 种页型，封面自动显示本技能作者署名 |
+| `deck_engine.py` | 命令行入口、自检、PNG 导出 |
+| `deck_lint.py` | 读 PDF 真实坐标做几何检查，出缺陷清单 |
+| `doc_check.py` | 文档结构自检：体积上限、本文导航、锚点、相对链接；纯标准库，跨平台 |
+| `build_skill.py` | 构建可安装技能目录 `dist/startup-guide/`，剔除 `.venv` 与 wheels；安装清单见根目录 `INSTALL.md` |
+| `skill_check.py` | 校验安装产物：frontmatter 规范、目录名一致、体积、产物是否过期 |
+| `skill_smoke.py` | 接入冒烟验收：打印 4 个验收输入（INSTALL 第 3 节与样例 09/12/16），校验宿主输出形态并以退出码给结论；五条横向判据（收益承诺变体 / 编造参数 / 假闸门 / 条款效力与整体安全断言 / 无边界声明的合同正文）各带守卫，`--selftest` 跑 4 正 11 反 9 误杀；只验形态不判内容，维护者侧工具不进安装单元 |
+| `smoke_rules.py` | 冒烟判据、守卫与自检样本：五条横向判据各配防误杀守卫，反样本与误杀样本同置一处。样本不另拆文件，是因为改判据时要同时看到会破坏哪些反例；本文件从主文件拆出，按职责分开判据与协议（0021、0023） |
+| `build_flat.py` | 生成 B 形态单文件 `dist/startup-guide.flat.txt`：SKILL.md 加 5 份关键 references（含检索兜底）机械合并，给只有对话框的宿主当系统提示；`--check` 拦过期产物，`.txt` 载荷不占文档行数口径。生成时打印 token 估算与 8k/32k/128k 占用；源文件里 `<!-- flat:skip -->` 圈住的维护者段落不进载荷（0019） |
+| `mcp_server.py` | MCP 服务端（stdio JSON-RPC，纯标准库不装 SDK）：5 个只读工具 + 递归暴露 `references/`、`data/`、`examples/`、`hosts/` resources + `checkup` prompt；阈值全读 `data/params.json`，工具里不含判断。`--selftest` 断言，`--list` 看暴露面 |
+| `mcp_tools.py` | MCP 的工具层：五个只读工具与 `TOOLS` 表。只算数不下判断；与协议层分开，边界落在「算」与「说」（0010、0014） |
+| `bootstrap.py` | 部署：建 `.venv`、离线装 wheel、冒烟测试 |
+| `doctor.py` | 环境体检：默认只检查 PPTX 基础环境；`--pdf` 才实测可选转换 |
+| `requirements.txt` | 生成 PPTX 的基础依赖 |
+| `requirements-pdf-check.txt` | 可选 PDF 几何检查依赖 |
+| `wheels/*.whl` | 离线依赖源，7 个文件 27.2 MB，入库 |
+| `briefs/*.json` | 内容。新增一份就是一个新演示文稿 |
+
+代码文件统一守 **500 行停手线 / 520 行硬上限**（决策 0026），不按文件单独声明预算——逐文件预算列曾经出现四处「声明值低于实际值」的自相矛盾，那正是它该被撤掉的理由。`doc_check.py` 对 500–520 行区间给 `[提示]`，不判缺陷。
 
 `doc_check.py` 不依赖 `python-pptx`，只查 Markdown 与代码文件的结构，是 `AGENTS.md`「交付前自检」的指定命令：
 

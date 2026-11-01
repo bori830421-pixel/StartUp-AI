@@ -2,10 +2,12 @@
 """文档结构自检：跨平台替代 find/wc 单行命令。
 
 判定四类缺陷（对应 AGENTS.md「文件规模与导航约束」）：
-  1. 越过硬上限：Markdown 520 行 / 32 KB，代码文件 400 行
+  1. 越过硬上限：Markdown 520 行 / 32 KB，代码文件 520 行
   2. 超过 120 行却没有「## 本文导航」
   3. 导航锚点对不上真实标题
   4. 相对链接失效
+
+代码文件另有 500 行停手线：触及即警告（不判缺陷），提示新增逻辑先拆模块。
 
 退出码：0 干净 / 1 有缺陷。
 
@@ -19,7 +21,10 @@ import re
 import sys
 
 MD_LINE_MAX, MD_BYTE_MAX = 520, 32 * 1024
-CODE_LINE_MAX = 400
+CODE_LINE_MAX = 520
+# 停手线：触及即不许再加内容，但不算缺陷——拆分是写之前就该做的判断，
+# 检查器只负责提醒，不替人决定拆在哪。与 AGENTS.md 的「代码文件 500 行」对应。
+CODE_LINE_WARN = 500
 NAV_REQUIRED_OVER = 120
 # .venv 是 setup.bat 装的第三方依赖，不是本项目的代码，必须跳过——
 # 否则光 Pillow/pptx 就有上百个文件越过代码行数上限，把真缺陷淹没。
@@ -71,6 +76,13 @@ def check_size(rel: str, lines: int, size: int) -> list:
             return [f"{rel}: 越过硬上限（{lines} 行 / {size // 1024} KB，上限 {MD_LINE_MAX} 行 / {MD_BYTE_MAX // 1024} KB）"]
     elif rel.endswith(".py") and lines > CODE_LINE_MAX:
         return [f"{rel}: 代码越过硬上限（{lines} 行，上限 {CODE_LINE_MAX}）"]
+    return []
+
+
+def check_code_warn(rel: str, lines: int) -> list:
+    """代码触及 500 行停手线：提醒拆分，但不判缺陷。"""
+    if rel.endswith(".py") and CODE_LINE_WARN <= lines <= CODE_LINE_MAX:
+        return [f"[提示] {rel}: {lines} 行已触及停手线 {CODE_LINE_WARN}，新增逻辑请先拆模块"]
     return []
 
 
@@ -145,7 +157,7 @@ def main() -> int:
 
     root = os.path.abspath(args.root)
     records = walk(root)
-    problems, errors = [], []
+    problems, errors, warnings = [], [], []
 
     for path, lines, size, err, text in records:
         rel = os.path.relpath(path, root).replace(os.sep, "/")
@@ -155,6 +167,7 @@ def main() -> int:
         problems += check_size(rel, lines, size)
         problems += check_nav(rel, lines, text)
         problems += check_links(rel, text, root)
+        warnings += check_code_warn(rel, lines)
 
     if args.verbose:
         print("体积排行（前 20）")
@@ -165,9 +178,12 @@ def main() -> int:
 
     for item in problems + errors:
         print(item)
+    for item in warnings:
+        print(item)
 
     md_count = sum(1 for r in records if r[0].endswith(".md"))
-    print(f"\n检查 {len(records)} 个文件（Markdown {md_count} 个）：{len(problems)} 项缺陷，{len(errors)} 项读取失败")
+    tail = f"，{len(warnings)} 项提示" if warnings else ""
+    print(f"\n检查 {len(records)} 个文件（Markdown {md_count} 个）：{len(problems)} 项缺陷，{len(errors)} 项读取失败{tail}")
     return 1 if (problems or errors) else 0
 
 

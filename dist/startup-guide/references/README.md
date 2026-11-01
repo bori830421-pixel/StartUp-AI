@@ -8,8 +8,8 @@
 
 | 文件 | 用途 | 状态 |
 | --- | --- | --- |
-| [intake-questions.md](./intake-questions.md) | 8 道选择题形式的引导盘点 + 第 9 题用工结构 + 第 10 题出资结构，把答不出的开放题变成答得出的选择题 | 现行 |
-| [cost-discovery.md](./cost-discovery.md) | 固定成本盘点：租金/人工/生活开支怎么问、公开成本默认检索、老板劳动按 0 元的处理 | 现行 |
+| [intake-questions.md](./intake-questions.md) | 9 道必问 + 3 道条件题 + 不占题号的追问（开张日期、月供、转让费、二手设备报价）；按内容分三轮，把答不出的开放题变成答得出的选择题 | 现行 |
+| [cost-discovery.md](./cost-discovery.md) | 固定成本盘点：按原型分行的场地/人工问法（电商与种养各占一行）、资产盘点（接手店 / 二手设备 / 自家场地）、条件题用工推断、答不出怎么办 | 现行，接近上限 |
 | [capital-bands.md](./capital-bands.md) | 资金带分层：六档预算 × 七原型映射，先按钱筛掉不可能的原型，再进模式分叉 | 现行 |
 | [pattern-fork.md](./pattern-fork.md) | 体检前的模式分叉：分叉位置、各类目分叉、对四项的影响、三条纪律 | 现行 |
 | [partnership-structure.md](./partnership-structure.md) | 出资与权责结构分叉：该不该合伙的三个替代解法、四类出资、主体形态、对四个分项的影响、增量与存量两条入口 | 现行 |

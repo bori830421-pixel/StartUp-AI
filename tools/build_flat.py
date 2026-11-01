@@ -17,8 +17,8 @@
   后果 ③），从 11 张品类卡的首行提取「品类名 + 一句话边界」，单一来源防漂移。
   产物整体仍能被 --check 逐字节复验。
 - SKILL.md 的 frontmatter 剥掉：那是给安装器看的，不是给提示词用的。
-- 扩展名用 .txt：单文件约 800 行，写成 .md 会越过硬上限 520 行，
-  doc_check 门禁必红；它是粘贴用载荷，不是待维护文档。
+- 扩展名用 .txt：单文件已越过 520 行硬上限，写成 .md 会让 doc_check 门禁必红；
+  它是粘贴用载荷，不是待维护文档（行数由本工具现算并打印，不写死）。
 - 产物放在 dist/ 顶层、不在 dist/startup-guide/ 内，与 skill_check.py
   的校验范围（目录技能）互不重叠；本工具自带 --check 拦过期。
 
@@ -43,7 +43,7 @@ OUT = REPO / "dist" / "startup-guide.flat.txt"
 # （相对路径，用途标签，是否剥 frontmatter）
 PARTS = (
     ("SKILL.md", "主流程与硬约束", True),
-    ("references/intake-questions.md", "怎么问：8 道引导题", False),
+    ("references/intake-questions.md", "怎么问：9 道必问 + 3 道条件题 + 追问", False),
     ("references/pattern-fork.md", "模式分叉：先定用哪套成本算", False),
     ("references/checkup-scorecard.md", "怎么算：七维体检评分口径", False),
     ("references/search-fallback.md", "检索兜底：有网没工具时怎么查", False),

@@ -13,7 +13,8 @@
 | [expansion-roadmap.md](./expansion-roadmap.md) | 从通用框架到任务级创业陪跑的分阶段推进路线 | 现行 |
 | [module-review-checklist.md](./module-review-checklist.md) | 行业、平台与任务模块的手工审核、来源复核和样例回归清单 | 现行；手工流程，无自动化工具 |
 | [verification-guide.md](./verification-guide.md) | 验收场景、交付前检查、闸门退化形态、文档变更验证方式 | 现行 |
-| [decisions/](./decisions/) | 决策记录，一主题一文件，编号连续 | 25 份 |
+| [install-verification.md](./install-verification.md) | 三种安装形态的实测结果、冒烟判据边界、残余缺口 | 现行 |
+| [decisions/](./decisions/) | 决策记录，一主题一文件，编号连续 | 27 份 |
 
 ## 决策记录
 
@@ -46,6 +47,8 @@
 | [0023](./decisions/0023-partnership-branch.md) | 合伙分支：正交第二轴，不开第八原型；开存量入口 | 已采纳 |
 | [0024](./decisions/0024-doc-line-cap-520.md) | 文档行数上限提到 520 行；同时禁止为用满上限而凑数 | 已采纳（修订 0005 行数项、0017 建议线） |
 | [0025](./decisions/0025-category-catalog.md) | 品类目录：封顶 11 类，插在门类与原型之间 | 已采纳 |
+| [0026](./decisions/0026-code-line-cap-520.md) | 代码文件行数上限提到 520 行，500 行停手 | 已采纳（修订 0024 的代码行数一项） |
+| [0027](./decisions/0027-intake-9-plus-3.md) | 引导盘点拆为 9 必问 + 3 条件题，补齐存量资产与准备期 | 已采纳 |
 
 ## 新增约定
 
