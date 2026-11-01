@@ -22,7 +22,7 @@
 | [scenario-estimation.md](./scenario-estimation.md) | 缺失数据分流、公开参数自动检索、低中高情景与临时投资立场 | 现行 |
 | [offline-degradation.md](./offline-degradation.md) | 离线降级：五类「搜不了」的判定（含「工具缺凭据」这一独立入口）、固定提示话术与端点全失败时的检索记录、无网络时哪些维度还能算、局部门槛挂起与临时立场 | 现行 |
 | [search-fallback.md](./search-fallback.md) | 检索工具缺失时的兜底：国内 / 境外两份候选池（不排顺序）、基线判定、五类失败分类、官方站点直连、2026-10-30 实测记录；用哪个由智能体现场判断 | 现行，已收录进 B 单文件 |
-| [search-playbook.md](./search-playbook.md) | 检索剧本：四类查询公式、七个原型各自的查询串模板、站点限定、垃圾识别 | 现行 |
+| [search-playbook.md](./search-playbook.md) | 检索剧本：四类查询公式、十一个品类各自的查询串模板（0025 后挂载点在品类）、站点限定、垃圾识别 | 现行 |
 | [research-protocol.md](./research-protocol.md) | 定向检索协议：结构靠推演、参数先检索估算后核验、事实查官方原文；反证测试与交叉验证 | 现行 |
 | [checkup-scorecard.md](./checkup-scorecard.md) | 七维评分口径：三个硬门槛加四个软约束，含正式闸门和临时投入立场 | 现行，接近上限（204 行，后续只修订） |
 | [novice-guidance.md](./novice-guidance.md) | 面向新手的输出形态原则：三类简单思维与对应写法 | 现行 |

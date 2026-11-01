@@ -57,7 +57,7 @@
 
 ### 第 2 步 生成检索计划
 
-从 `data/archetypes/02-sell-goods-light.md` 的定向检索清单取，转成查询串（模板见 `references/search-playbook.md`「二、卖货·轻库存」）：
+从品类 02 骨架的「线上必查项」与流动摊位分叉行取，转成查询串（模板见 `references/search-playbook.md`「二、零售卖货·线下」）：
 
 | # | 查什么 | 查询串 | 判据 |
 | --- | --- | --- | --- |

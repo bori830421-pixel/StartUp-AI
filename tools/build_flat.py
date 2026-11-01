@@ -13,7 +13,9 @@
   会直接跳过兜底，把本可救的问题退回给用户。
 
 三条设计事实：
-- 机械拼接，不做编辑式删改：产物必须能被 --check 逐字节复验。
+- 机械拼接加一节现算：正文不做编辑式删改；唯一现算的是品类目录速查（决策 0025
+  后果 ③），从 11 张品类卡的首行提取「品类名 + 一句话边界」，单一来源防漂移。
+  产物整体仍能被 --check 逐字节复验。
 - SKILL.md 的 frontmatter 剥掉：那是给安装器看的，不是给提示词用的。
 - 扩展名用 .txt：单文件约 800 行，写成 .md 会越过硬上限 520 行，
   doc_check 门禁必红；它是粘贴用载荷，不是待维护文档。
@@ -57,7 +59,8 @@ HEADER = """# 创业指南技能 · 单文件版（B 形态）
 > 与目录形态（A，dist/startup-guide/）同源但能力弱：未收录的 references（运行时检索、检索串模板等）按问题临时补进对话。
 > 本文件只收运行时指令。维护者的实测记录、文档导航这类内容不进载荷——它们不改变模型该怎么做，只占上下文。
 
-以下依次收录：SKILL.md（主流程与硬约束）、intake-questions（怎么问）、
+以下依次收录：SKILL.md（主流程与硬约束）、品类目录速查（11 类名称与一句话边界，
+完整品类卡与查询串模板不在载荷内，按问题临时补进对话）、intake-questions（怎么问）、
 pattern-fork（模式分叉）、checkup-scorecard（怎么算）、search-fallback（检索兜底）、
 offline-degradation（断网降级）。"""
 
@@ -104,14 +107,51 @@ def strip_frontmatter(text: str) -> str:
     return text
 
 
+def category_summary() -> str:
+    """从 11 张品类卡现算「品类名 + 一句话边界」（决策 0025 后果 ③）。
+
+    边界句的单一来源是每张卡标题下的「一句话边界：」行，这里提取而不复制——
+    复制一份必然一处先腐。缺该行的卡直接报错，不许静默跳过。
+    """
+    rows = []
+    for card in sorted((REPO / "data" / "categories").glob("[0-1][0-9]-*.md")):
+        if card.name.startswith("00-"):
+            continue  # 00-catalog 是总表，速查表收的是 11 张品类卡
+        lines = card.read_text(encoding="utf-8").splitlines()
+        title = lines[0].lstrip("# ").strip() if lines else ""
+        boundary = None
+        for line in lines:
+            if line.startswith("一句话边界："):
+                boundary = line.split("：", 1)[1].strip()
+                break
+        if boundary is None:
+            raise ValueError(f"{card.name}：缺「一句话边界：」行，品类速查表无法生成")
+        rows.append((title, boundary))
+    out = [
+        "========== 收录：品类目录速查（11 类，名称 + 一句话边界）==========",
+        "",
+        "方向先落品类再取必查项；完整品类卡（必查项、资金带、缓存）与查询串模板不在本载荷内，",
+        "缺什么按问题临时补进对话。带位只是筛子，先砍品类再进模式分叉。",
+        "",
+        "| 品类 | 一句话边界 |",
+        "| --- | --- |",
+    ]
+    for title, boundary in rows:
+        out.append(f"| {title} | {boundary} |")
+    return "\n".join(out)
+
+
 def build() -> str:
     parts = [HEADER]
-    for rel, label, strip in PARTS:
+    for i, (rel, label, strip) in enumerate(PARTS):
         text = (REPO / rel).read_text(encoding="utf-8")
         if strip:
             text = strip_frontmatter(text)
         text = strip_skipped(text, rel)
         parts.append(f"========== 收录：{rel}（{label}）==========\n\n{text.rstrip()}")
+        if i == 0:
+            # 品类速查紧跟 SKILL.md：定位发生在流程最前面，速查要在它被用到之前出现
+            parts.append(category_summary())
     return "\n\n".join(parts) + "\n"
 
 
