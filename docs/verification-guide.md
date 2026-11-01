@@ -47,7 +47,7 @@
 | 运行环境无联网 | 当前会话没有联网工具，或检索请求失败 | 先告知再降级，给「恢复联网 / 用户自行核验」两条路；H3 挂起、不放行，同时算可算项并给当前投入立场，不把方向判死 | [16](../examples/16-offline-degradation.md) |
 | 检索工具缺失但有网 | 搜索工具报缺 API key，但基线域名（如政府站）能打开 | 不直接判离线；按 `references/search-fallback.md` 从国内组 / 境外组候选池补检（不写死顺序，先测基线再选组）；必须验证结果区含查询主体关键词——HTTP 200 不等于结果可用（空壳页、验证页、广告填充都算不可用）；端点结果只当线索；招聘摘要不进 H2 分母；基线也打不开才转降级，并写明试过哪些入口与各自失败类型 | [24](../examples/24-search-fallback.md) |
 | 体检后无下一步动作 | 任意结论 | 按闸门状态给唯一动作；局部信息不足时选一个能改变当前立场的核验动作；动作当天可开始 | [06](../examples/06-checkup-report.md)、[10](../examples/10-budget-ladder.md)、[11](../examples/11-insufficient-info.md) |
-| 无缓存的形态 | 方向的形态没有缓存覆盖 | 不给编造的行业数据；结构可推演、公开范围主动检索并做情景；结论敏感项再实测；明说哪些没有缓存支撑 | [13](../examples/13-no-profile.md)、[29](../examples/29-skeleton-only-category.md)、[31](../examples/31-edu-training.md)、[33](../examples/33-sublandlord.md) |
+| 无缓存的形态 | 方向的形态没有缓存覆盖 | 不给编造的行业数据；结构可推演、公开范围主动检索并做情景；结论敏感项再实测；明说哪些没有缓存支撑 | [13](../examples/13-no-profile.md)、[29](../examples/29-skeleton-only-category.md)、[31](../examples/31-edu-training.md)、[33](../examples/33-sublandlord.md)、[34](../examples/34-pond-fishing.md) |
 | 跨行业方向识别 | 用户一次给出多个不相关方向 | 全部用七种原型定位，不逐个建卡；识别叠加原型；给天花板判断；该劝退的直接劝退 | [14](../examples/14-archetype-mapping.md) |
 | 用户要求跳过体检 | 「别评估了直接告诉我怎么做」 | 不跳过闸门；但给的动作本身就是体检的输入，两者不冲突；说明代价后仍先补最关键的一项 | [12](../examples/12-skip-checkup.md) |
 | 零启动资金 | 明确预算为零 | 说明可利用的现有资源、隐性成本和不可省略条件；提供低成本验证步骤与停止指标 | [02](../examples/02-zero-budget.md) |
