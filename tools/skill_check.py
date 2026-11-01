@@ -199,6 +199,38 @@ def check_params(root: Path) -> list[str]:
     return errors
 
 
+def check_rule_lock(repo: Path = REPO) -> list[str]:
+    """只核对已批准版本指纹；人工授权仍由维护规则约束，不自动签批。"""
+    import json
+
+    manifest = repo / "docs" / "rule-lock.json"
+    try:
+        data = json.loads(manifest.read_text(encoding="utf-8"))
+        entries = data["files"]
+        if not isinstance(entries, dict) or not entries:
+            return ["规则锁保护清单为空或类型错误；禁止自动重封"]
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        return [f"规则锁缺失或损坏：{exc}；须人工核准恢复"]
+    required = {"AGENTS.md", "SKILL.md", "references/operating-model.md",
+                "references/checkup-scorecard.md", "references/scenario-estimation.md",
+                "references/output-templates.md", "data/source-grading.md",
+                "data/params.json", "tools/mcp_tools.py", "tools/mcp_server.py",
+                "tools/build_flat.py", "tools/skill_check.py"}
+    errors = [f"规则锁缺保护项：{p}" for p in sorted(required - entries.keys())]
+    for rel, expected in entries.items():
+        if not isinstance(rel, str) or not isinstance(expected, str):
+            errors.append("规则锁路径与指纹须为字符串")
+            continue
+        path = (repo / rel).resolve()
+        if not path.is_relative_to(repo.resolve()):
+            errors.append(f"规则锁路径越界：{rel}")
+        elif not path.is_file():
+            errors.append(f"受保护文件缺失：{rel}")
+        elif hashlib.sha256(path.read_text(encoding="utf-8").encode("utf-8")).hexdigest() != expected:
+            errors.append(f"受保护规则指纹不符：{rel}；先核人工同意，禁止自动刷新指纹")
+    return errors
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="校验技能安装产物")
     parser.add_argument("--path", help=f"安装目录，默认 dist/{SKILL_NAME}")
@@ -213,7 +245,8 @@ def main() -> int:
         print("[必改] 安装单元缺 SKILL.md")
         return 1
 
-    errors = check_frontmatter(skill_md, root.name)
+    errors = check_rule_lock()
+    errors += check_frontmatter(skill_md, root.name)
     errors += check_layout(root)
     errors += check_fresh(root)
     errors += check_params(root)

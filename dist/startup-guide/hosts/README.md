@@ -21,12 +21,12 @@
 | | A 目录技能 | B 单文件 | C MCP |
 | --- | --- | --- | --- |
 | 落点 | `dist/startup-guide/` | `dist/startup-guide.flat.txt` | `tools/mcp_server.py` |
-| 按需加载 | 有，能读 references 与 examples | 无，只有收录进去的 5 份 | 有，resources 全量可读 |
+| 按需加载 | 有，能读 references 与 examples | 无，只有收录进去的 6 份 | 有，resources 全量可读 |
 | 判断能力 | 完整 | 完整但细节薄 | 完整 |
 | 典型宿主 | WorkBuddy、Claude Code、Codex、Cursor | 网页版对话、单轮 API | 只支持 MCP 的客户端 |
 | 相对强度 | 最强，首选 | 最弱，够用 | 强，但多一层配置 |
 
-**能装 A 就不要用 B。** B 没有按需加载，`SKILL.md` 里写「见 `references/xxx.md`」的地方，模型只能靠收录进去的那五份推断。
+**能装 A 就不要用 B。** B 没有按需加载，`SKILL.md` 里写「见 `references/xxx.md`」的地方，模型只能靠收录进去的那六份推断。
 
 ## 读哪一页
 

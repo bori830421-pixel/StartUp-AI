@@ -19,6 +19,7 @@
 | [legal-boundary.md](./legal-boundary.md) | 客户坚持要文本时的降级：三级阶梯与前提、可写与不可写的条款分界、章程只用范本加填空、强制声明的四件事、措辞禁用表、版本留痕 | 现行 |
 | [contract-review.md](./contract-review.md) | 客户发来合同或章程时的审阅：不对称清单、缺口清单、数字核对三层输出，「能不能签」只答后果，六个形态信号转律师，章程只看三处 | 现行 |
 | [runtime-loop.md](./runtime-loop.md) | 运行时循环：分型→检索计划→执行→校验→判断→输出六步，含两轮检索预算与「什么算查到了」 | 现行，接近上限（212 行，后续只修订） |
+| [operating-model.md](./operating-model.md) | 受保护的经营测算硬规则 M01–M09：规模用工、资金、毛利利润、现金、三档与逐月明细、人工修改审批 | 现行 |
 | [scenario-estimation.md](./scenario-estimation.md) | 缺失数据分流、公开参数自动检索、低中高情景与临时投资立场 | 现行 |
 | [offline-degradation.md](./offline-degradation.md) | 离线降级：五类「搜不了」的判定（含「工具缺凭据」这一独立入口）、固定提示话术与端点全失败时的检索记录、无网络时哪些维度还能算、局部门槛挂起与临时立场 | 现行 |
 | [search-fallback.md](./search-fallback.md) | 检索工具缺失时的兜底：国内 / 境外两份候选池（不排顺序）、基线判定、五类失败分类、官方站点直连、2026-10-30 实测记录；用哪个由智能体现场判断 | 现行，已收录进 B 单文件 |
@@ -34,7 +35,7 @@
 
 ## 阅读顺序
 
-主流程顺序是 `intake-questions` → `capital-bands` → `pattern-fork` → `partnership-structure` → `runtime-loop` → `cost-discovery` → `scenario-estimation` → `checkup-scorecard`，`novice-guidance` 全程约束输出形态，`coaching-templates` 只在闸门放行后使用，`output-templates` 与 `deck-spec` 只在用户要文件时使用。
+主流程顺序是 `intake-questions` → `capital-bands` → `pattern-fork` → `partnership-structure` → `runtime-loop` → `cost-discovery` → `scenario-estimation` → `operating-model` → `checkup-scorecard`，`novice-guidance` 全程约束输出形态，`coaching-templates` 只在闸门放行后使用，`output-templates` 与 `deck-spec` 只在用户要文件时使用。
 
 `partnership-structure` 与 `pattern-fork` 并列：两者都在体检之前、都只改分项不改原型。区别是分叉决定「用哪套成本算钱」，它决定「钱是谁的、谁说了算、怎么退」。没有别人出钱时这一步只有一句话，不占篇幅；有别人出钱时才展开，展开后再读三份配套文件：`partnership-terms`（找缺口）、`partnership-redflags`（排风险）、`equity-math`（算比例与退出价）。
 

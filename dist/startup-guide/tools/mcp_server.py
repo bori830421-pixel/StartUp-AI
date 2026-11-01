@@ -91,7 +91,7 @@ PROMPT_TEXT = """请按 startup-guide 的流程评估下面这个方向，**不�
 2. 先定资金带、生意原型和经营模式，再计算；餐饮等有堂食时识别桌数/座位、翻台、客单、营业日和外带外卖渠道
 3. 用户给出城市或区域时，按原型和检索预算主动查当前公开参数与官方事实；不要要求新手先提供可公开查到的数据
 4. 将缺失项分成个人事实、公开参数、模型假设和本地/官方核验；公开参数做低/中/高场景，来源等级、日期、口径与假设写清。单一来源或 L4 只能作线索；压力测试须明确排除在判断依据外
-5. 评估 H1 客户/需求可达、H2 现金流断点、H3 合规前置，以及四项软约束；门店容量与所需保本流水比较，堂食与外卖分别计算
+5. 必须读取 references/operating-model.md，展示店型面积与岗位人数、开业占款、月度开销、三档客单和销量到毛利/利润/现金的计算、保本线及逐月余额；明细不能以篇幅为由省略。按 M09 保护规则，修改公式、闸门或保护措施须明确人工批准。评估 H1 客户/需求可达、H2 现金流断点、H3 合规前置，以及四项软约束；门店容量与所需保本流水比较，堂食与外卖分别计算
 6. 分开写正式闸门状态、当前拟议投入立场和方向判断。局部门槛缺证据时，不给启动放行或阶段陪跑，但仍报告可算场景和一个能改变判断的核验动作；不要把信息不足写成方向失败
 7. 以一个当天能开始的动作结尾，并说明结果如何改变当前判断
 
@@ -237,6 +237,10 @@ def selftest() -> int:
     h3 = tool_h2_check({"case": "B", "working_capital": 50000, "monthly_net_outflow": 8000,
                         "fixed_cost_items": 3}, params)
     expect("B：缺爬坡期按 6 个月", h3.get("required_months") == 7 and h3.get("ramp_assumed") is True, h3)
+    for outflow in (0, -10000):
+        result = tool_h2_check({"case": "B", "working_capital": 1000000,
+                               "monthly_net_outflow": outflow, "fixed_cost_items": 3}, params)
+        expect(f"B：净流出 {outflow} 不自动放行", result.get("verdict") == "信息不足", result)
 
     t = tool_taxonomy_lookup({"keyword": "卤味摊"}, params)
     expect("门类解析到 20 个", len(t.get("all_categories", [])) == 20, len(t.get("all_categories", [])))

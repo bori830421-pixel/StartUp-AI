@@ -47,7 +47,7 @@ Windows 上 `command` 用 `python`。路径里不要用 `~`，多数客户端不
 先不接宿主，直接验服务端：
 
 ```bash
-python3 tools/mcp_server.py --selftest   # 16 项工具断言，退出码 0
+python3 tools/mcp_server.py --selftest   # 18 项工具断言，退出码 0
 python3 tools/mcp_server.py --list       # 看暴露了什么
 ```
 
@@ -55,4 +55,4 @@ python3 tools/mcp_server.py --list       # 看暴露了什么
 
 ## 一个坑
 
-MCP 工具返回的是「算式与判定」，不是结论。宿主如果直接把 `h2_check` 的输出念给用户，用户会看到一句「不通过」却不知道为什么。正确用法是先按 `SKILL.md` 走完模式分叉，再拿 `h2_check` 算一个数，最后把依据讲成人话。这也是为什么 `tools/call` 的返回里带着 `formula` 字段——让模型有东西可讲。
+MCP 工具返回的是「算式与判定」，不是结论。必须先按 `references/operating-model.md` 建完整经营测算；`h2_check` 只算固定情景，不能检查逐月早期缺口，返回“通过”也不能替代真实 H2 或整体放行。宿主如果直接把 `h2_check` 的输出念给用户，用户会看到一句「不通过」却不知道为什么。正确用法是先按 `SKILL.md` 走完模式分叉，再拿 `h2_check` 算一个数，最后把依据讲成人话。这也是为什么 `tools/call` 的返回里带着 `formula` 字段——让模型有东西可讲。

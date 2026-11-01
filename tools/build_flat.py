@@ -45,6 +45,7 @@ PARTS = (
     ("SKILL.md", "主流程与硬约束", True),
     ("references/intake-questions.md", "怎么问：9 道必问 + 3 道条件题 + 追问", False),
     ("references/pattern-fork.md", "模式分叉：先定用哪套成本算", False),
+    ("references/operating-model.md", "必须算什么：经营测算硬规则与人工修改保护", False),
     ("references/checkup-scorecard.md", "怎么算：七维体检评分口径", False),
     ("references/search-fallback.md", "检索兜底：有网没工具时怎么查", False),
     ("references/offline-degradation.md", "断网降级：先告知再降级", False),
@@ -61,7 +62,7 @@ HEADER = """# 创业指南技能 · 单文件版（B 形态）
 
 以下依次收录：SKILL.md（主流程与硬约束）、品类目录速查（11 类名称与一句话边界，
 完整品类卡与查询串模板不在载荷内，按问题临时补进对话）、intake-questions（怎么问）、
-pattern-fork（模式分叉）、checkup-scorecard（怎么算）、search-fallback（检索兜底）、
+pattern-fork（模式分叉）、operating-model（经营测算硬规则）、checkup-scorecard（怎么算）、search-fallback（检索兜底）、
 offline-degradation（断网降级）。"""
 
 # 源文件里用这两行圈出「只给维护者看、运行时用不上」的段落。

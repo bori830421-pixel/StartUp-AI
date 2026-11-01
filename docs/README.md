@@ -12,9 +12,10 @@
 | [capability-index.md](./capability-index.md) | 能力清单、成熟度状态、对应样例、条目编写约定 | 现行 |
 | [expansion-roadmap.md](./expansion-roadmap.md) | 从通用框架到任务级创业陪跑的分阶段推进路线 | 现行 |
 | [module-review-checklist.md](./module-review-checklist.md) | 行业、平台与任务模块的手工审核、来源复核和样例回归清单 | 现行；手工流程，无自动化工具 |
+| [rule-lock.json](./rule-lock.json) | 人工批准后的受保护规则文件 SHA-256；禁止智能体自动重封 | 现行，受保护 |
 | [verification-guide.md](./verification-guide.md) | 验收场景、交付前检查、闸门退化形态、文档变更验证方式 | 现行 |
 | [install-verification.md](./install-verification.md) | 三种安装形态的实测结果、冒烟判据边界、残余缺口 | 现行 |
-| [decisions/](./decisions/) | 决策记录，一主题一文件，编号连续 | 27 份 |
+| [decisions/](./decisions/) | 决策记录，一主题一文件，编号连续 | 31 份 |
 
 ## 决策记录
 
@@ -51,6 +52,9 @@
 | [0027](./decisions/0027-intake-9-plus-3.md) | 引导盘点拆为 9 必问 + 3 条件题，补齐存量资产与准备期 | 已采纳 |
 | [0028](./decisions/0028-retrieval-native-first.md) | 检索入口改为自带能力优先，失败后才判「没网/没工具」 | 已采纳（修订 0015 的前置判断顺序） |
 | [0029](./decisions/0029-staffing-intake.md) | 用工人数改为「问出」：选项去人数锚点，品类卡加参考用工 | 已采纳（修订 0027 的条件 11 采集口径） |
+| [0030](./decisions/0030-retrieval-sink.md) | 检索沉淀：按城市层级聚合的本地知识库，不入库 | 已采纳 |
+
+| [0031](./decisions/0031-operating-model-lock.md) | 统一经营测算、逐月现金与人工批准保护；修正 H2 重复扣成本 | 已采纳 |
 
 ## 新增约定
 

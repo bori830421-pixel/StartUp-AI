@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "approved_on": "2026-11-01",
+  "approval_basis": "维护者在当前会话明确要求：写成硬规则，后续其他智能体修改得有人工同意；多检查，锁定并完善规则。此记录不代替真实批准指令。",
+  "change_scope": "建立 M01–M09、修正 H2、统一三种接入、增加确定性指纹门禁；以后变更须单独批准。",
+  "policy": "禁止自动重封；先提供具体差异、影响与回归结果，获维护者明确同意后才改保护文件和指纹。",
+  "files": {
+    "AGENTS.md": "7e964e563be825840a4add52749284be190c5262ee0778ed6432b23f4d007306",
+    "SKILL.md": "e3043539cb6e3ff057c506b239db23c448878013dbf77e9f1f5a1ce4e621d59c",
+    "references/operating-model.md": "50176fa41a0a718507b7055e1a39c61c551b64fd26815151947f1eb57b9a4ecb",
+    "references/checkup-scorecard.md": "59f9d2fda97260c57f9097562c7546d32e82e0665297fb1c3384232c58f2e5d7",
+    "references/scenario-estimation.md": "74ebf3fceee964e0e4861f0efe356dd35fc72f04445e549632e46e5908eb39e0",
+    "references/output-templates.md": "02c458ece3d724cb4354a889feaf4e50b05690441ecf58105a3b455e5c790e28",
+    "data/source-grading.md": "addf2af538103d5031d839ab81991b5b1e7accf47c73707650d6bebce8fb40c9",
+    "data/params.json": "c33d2856f63421b71bd4137992404330ddd982d58f45fe35d36ea01c65a54967",
+    "tools/mcp_tools.py": "060f886b76bf26bd4ac47148bb2c3534d53d44a83409bf7214c74643403a8394",
+    "tools/mcp_server.py": "b8ac1adfe8220a8fe2e2d0c41fa064da6e9c19d6eda74a7dd438cde71acc9b9f",
+    "tools/build_flat.py": "f02721840ca9eea6b61b11a849d159e1d096a31fd3d5f1f0ed3b76c97bf9ca3b",
+    "tools/skill_check.py": "072827d6e1a287cd5dff605b12a41c1dc99492c843dc2bc2f7a4e3d9c8522c81"
+  },
+  "hash_encoding": "UTF-8 text normalized to LF; no semantic rewriting"
+}

@@ -136,7 +136,7 @@ def tool_h2_check(args: dict, params: dict) -> dict:
         if not all(isinstance(v, (int, float)) for v in (capital, outflow)):
             return {"error": "情形 B 需要 working_capital、monthly_net_outflow（爬坡期可缺省，缺省取 6）"}
         if outflow <= 0:
-            out.update({"verdict": "通过", "reason": "月净流出 ≤ 0（净利大于支出），情形 B 直接通过"})
+            out.update({"verdict": "信息不足", "reason": "该固定情景无持续净流出，但除法不能检查早期缺口；须按经营测算硬规则核对逐月余额，不能自动通过"})
         else:
             if not isinstance(ramp, (int, float)):
                 ramp, out["ramp_assumed"] = cfg["default_ramp_months"], True
@@ -237,7 +237,7 @@ TOOLS = {
                 "monthly_fixed": {"type": "number", "description": "情形 A：月度固定支出（含生活开支）"},
                 "months_to_first_income": {"type": "number", "description": "情形 A：预计首笔收入月数，取保守值"},
                 "working_capital": {"type": "number", "description": "情形 B：流动资金 = 可用资金 − 开店投入"},
-                "monthly_net_outflow": {"type": "number", "description": "情形 B：月净流出 = 月度固定支出 − 月净利"},
+                "monthly_net_outflow": {"type": "number", "description": "情形 B：月净流出 = 实际现金付款（含生活提款）− 实际销售回款；禁止固定支出减净利润，仅适用稳定情景近似"},
                 "ramp_months": {"type": "number", "description": "情形 B：爬坡期，未知时省略，按 6 个月算"},
                 "fixed_cost_items": {"type": "integer", "description": "月度固定支出已覆盖几项（店租、人工、生活开支、其他）"},
             },
