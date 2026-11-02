@@ -36,3 +36,6 @@ __pycache__/
 
 # 本地知识库：官方资料缓存，仅供本机运行时检索，不入库
 /local-knowledge/
+
+# 本机交付产物：渲染出的 pptx 与逐页 png，brief 是源，重跑即可
+/outputs/

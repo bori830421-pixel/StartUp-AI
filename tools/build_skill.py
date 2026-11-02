@@ -31,7 +31,7 @@ TOOL_FILES = (
     "requirements.txt",
     "requirements-pdf-check.txt",
 )
-TOOL_GLOBS = {"briefs": "*.json"}
+TOOL_GLOBS = {"briefs": "*.json"}  # 只打顶层示例；tools/briefs/cases/ 是本机案例，不进安装单元
 FORBIDDEN = (
     ".venv",
     ".git",

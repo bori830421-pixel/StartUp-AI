@@ -215,7 +215,7 @@ def check_rule_lock(repo: Path = REPO) -> list[str]:
                 "references/checkup-scorecard.md", "references/scenario-estimation.md",
                 "references/output-templates.md", "data/source-grading.md",
                 "data/params.json", "tools/mcp_tools.py", "tools/mcp_server.py",
-                "tools/build_flat.py", "tools/skill_check.py"}
+                "tools/build_flat.py", "tools/skill_check.py", "tools/build_skill.py"}
     errors = [f"规则锁缺保护项：{p}" for p in sorted(required - entries.keys())]
     for rel, expected in entries.items():
         if not isinstance(rel, str) or not isinstance(expected, str):

@@ -8,6 +8,13 @@ from pathlib import Path
 
 from skill_check import REPO, check_rule_lock
 
+# 与 check_rule_lock 的 required 集合保持一致：删这些项必须报缺保护项
+REQUIRED = {"AGENTS.md", "SKILL.md", "references/operating-model.md",
+            "references/checkup-scorecard.md", "references/scenario-estimation.md",
+            "references/output-templates.md", "data/source-grading.md",
+            "data/params.json", "tools/mcp_tools.py", "tools/mcp_server.py",
+            "tools/build_flat.py", "tools/skill_check.py", "tools/build_skill.py"}
+
 
 def main() -> int:
     source = json.loads((REPO / "docs/rule-lock.json").read_text(encoding="utf-8"))
@@ -46,6 +53,16 @@ def main() -> int:
         del reduced["files"]["references/checkup-scorecard.md"]
         write(reduced)
         expect("removed required protection", True)
+        # 清单可含非 required 项：指纹匹配时不报缺项。当前清单全部必选，补一条虚构项作对照
+        import hashlib
+        write(source)
+        (root / "notes").mkdir(exist_ok=True)
+        (root / "notes/scratch.md").write_text("", encoding="utf-8")
+        empty_hash = hashlib.sha256(b"").hexdigest()
+        with_optional = dict(source, files=dict(source["files"], **{"notes/scratch.md": empty_hash}))
+        write(with_optional)
+        expect("optional entry present stays clean", False)
+        write(source)
         escaped = dict(source, files=dict(source["files"], **{"../escape.md": "0" * 64}))
         write(escaped)
         expect("path traversal", True)
