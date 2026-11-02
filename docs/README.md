@@ -15,6 +15,7 @@
 | [rule-lock.json](./rule-lock.json) | 人工批准后的受保护规则文件 SHA-256；禁止智能体自动重封 | 现行，受保护 |
 | [verification-guide.md](./verification-guide.md) | 验收场景、交付前检查、闸门退化形态、文档变更验证方式 | 现行 |
 | [install-verification.md](./install-verification.md) | 三种安装形态的实测结果、冒烟判据边界、残余缺口 | 现行 |
+| [validations/](./validations/) | 真实用户任务的执行记录，能力升为「已验证」的唯一依据 | 现行；1 份记录 |
 | [decisions/](./decisions/) | 决策记录，一主题一文件，编号连续 | 31 份 |
 
 ## 决策记录
