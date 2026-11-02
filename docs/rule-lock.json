@@ -1,11 +1,11 @@
 {
   "version": 1,
   "approved_on": "2026-11-02",
-  "approval_basis": "基线（2026-11-01）：维护者要求写成硬规则，后续修改须人工同意。2026-11-02 第一次变更：维护者原话「批准：同意把 AGENTS.md 新增的检索沉淀触发说明纳入规则锁，重封 AGENTS.md 指纹。」2026-11-02 第二次变更：维护者原话「批准：把 tools/build_skill.py 纳入规则锁保护清单，同时更新 skill_check.py 的 required 集合和 rule_lock_selftest.py 的删项用例，重封指纹」。2026-11-02 第三次变更：维护者原话「批准：同意把 AGENTS.md 新增的「检索前先查本地记录」一段纳入规则锁，重封 AGENTS.md 指纹。」三次均不涉及 M01–M09、H/S 判据、闸门与公式。此记录不代替真实批准指令。",
-  "change_scope": "2026-11-02：重封 AGENTS.md 两次（检索沉淀触发说明；检索前先查本地记录的闭环）；build_skill.py 纳入保护清单（决定哪些文件进安装单元）；skill_check 的 required 增至 13 项；rule_lock_selftest 补「删非 required 项不报缺项」对照；references/search-playbook.md 加维护环境查本地记录的行为提示（非保护文件，不含命令与路径）。其余保护文件沿用 2026-11-01 基线指纹。以后变更须单独批准。",
+  "approval_basis": "基线（2026-11-01）：维护者要求写成硬规则，后续修改须人工同意。2026-11-02 第一次变更：维护者原话「批准：同意把 AGENTS.md 新增的检索沉淀触发说明纳入规则锁，重封 AGENTS.md 指纹。」2026-11-02 第二次变更：维护者原话「批准：把 tools/build_skill.py 纳入规则锁保护清单，同时更新 skill_check.py 的 required 集合和 rule_lock_selftest.py 的删项用例，重封指纹」。2026-11-02 第三次变更：维护者原话「批准：同意把 AGENTS.md 新增的「检索前先查本地记录」一段纳入规则锁，重封 AGENTS.md 指纹。」2026-11-02 第四次变更：维护者原话「批准：同意把 AGENTS.md 新增的「向用户要平台数据前先确认可抓取性」一段纳入规则锁，重封 AGENTS.md 指纹。」四次均不涉及 M01–M09、H/S 判据、闸门与公式。此记录不代替真实批准指令。",
+  "change_scope": "2026-11-02：重封 AGENTS.md 三次（检索沉淀触发说明；检索前先查本地记录；向用户要平台数据前先确认可抓取性）；build_skill.py 纳入保护清单（决定哪些文件进安装单元）；skill_check 的 required 增至 13 项；rule_lock_selftest 补「删非 required 项不报缺项」对照；references/search-playbook.md 加维护环境查本地记录的行为提示（非保护文件，不含命令与路径）；data/categories/03-ecommerce.md 拆开开店与上架两道门、修正自备货的产业带与集货分叉。其余保护文件沿用 2026-11-01 基线指纹。以后变更须单独批准。",
   "policy": "禁止自动重封；先提供具体差异、影响与回归结果，获维护者明确同意后才改保护文件和指纹。",
   "files": {
-    "AGENTS.md": "3629bf01ae68c7c6a3bb51855faa054fa58ed41eacb475c4a42543591982872b",
+    "AGENTS.md": "9dd7446ba7531f6168e0898810aa5f021287bf1140be5026d3f586725c9ca464",
     "SKILL.md": "e3043539cb6e3ff057c506b239db23c448878013dbf77e9f1f5a1ce4e621d59c",
     "references/operating-model.md": "50176fa41a0a718507b7055e1a39c61c551b64fd26815151947f1eb57b9a4ecb",
     "references/checkup-scorecard.md": "59f9d2fda97260c57f9097562c7546d32e82e0665297fb1c3384232c58f2e5d7",
